@@ -1,0 +1,4 @@
+node_modules/
+# 1차 버전에서 쓰던 글꼴 (지금은 사용하지 않음)
+assets/fonts/Galmuri*
+assets/fonts/OFL.md

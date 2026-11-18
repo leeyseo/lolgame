@@ -1,0 +1,212 @@
+{
+ "GEN": {
+  "lum": 0.728,
+  "opaqueBg": false,
+  "bytes": 2530,
+  "src": "192x192"
+ },
+ "HLE": {
+  "lum": 0.786,
+  "opaqueBg": false,
+  "bytes": 3182,
+  "src": "192x192"
+ },
+ "T1": {
+  "lum": 0.202,
+  "opaqueBg": false,
+  "bytes": 2040,
+  "src": "192x192"
+ },
+ "KT": {
+  "lum": 0.314,
+  "opaqueBg": false,
+  "bytes": 3552,
+  "src": "192x192"
+ },
+ "DK": {
+  "lum": 1,
+  "opaqueBg": false,
+  "bytes": 1574,
+  "src": "192x192"
+ },
+ "NS": {
+  "lum": 0.224,
+  "opaqueBg": false,
+  "bytes": 3434,
+  "src": "192x192"
+ },
+ "BFX": {
+  "lum": 0.214,
+  "opaqueBg": false,
+  "bytes": 6210,
+  "src": "192x192"
+ },
+ "DNS": {
+  "lum": 0.301,
+  "opaqueBg": false,
+  "bytes": 3140,
+  "src": "192x192"
+ },
+ "KRX": {
+  "lum": 0.945,
+  "opaqueBg": false,
+  "bytes": 3820,
+  "src": "192x192"
+ },
+ "BRO": {
+  "lum": 0.505,
+  "opaqueBg": false,
+  "bytes": 4130,
+  "src": "192x192"
+ },
+ "BLG": {
+  "lum": 0.681,
+  "opaqueBg": false,
+  "bytes": 3326,
+  "src": "192x192"
+ },
+ "AL": {
+  "lum": 0.354,
+  "opaqueBg": false,
+  "bytes": 3982,
+  "src": "192x136"
+ },
+ "TES": {
+  "lum": 0.397,
+  "opaqueBg": false,
+  "bytes": 2642,
+  "src": "192x192"
+ },
+ "IG": {
+  "lum": 0.532,
+  "opaqueBg": false,
+  "bytes": 3868,
+  "src": "192x192"
+ },
+ "JDG": {
+  "lum": 0.25,
+  "opaqueBg": false,
+  "bytes": 2756,
+  "src": "192x192"
+ },
+ "WBG": {
+  "lum": 0.503,
+  "opaqueBg": false,
+  "bytes": 4332,
+  "src": "192x170"
+ },
+ "LNG": {
+  "lum": 0.399,
+  "opaqueBg": false,
+  "bytes": 5850,
+  "src": "192x192"
+ },
+ "EDG": {
+  "lum": 0.778,
+  "opaqueBg": false,
+  "bytes": 4606,
+  "src": "192x192"
+ },
+ "NIP": {
+  "lum": 0.895,
+  "opaqueBg": false,
+  "bytes": 6680,
+  "src": "192x192"
+ },
+ "WE": {
+  "lum": 0.275,
+  "opaqueBg": false,
+  "bytes": 2730,
+  "src": "192x127"
+ },
+ "OMG": {
+  "lum": 0.673,
+  "opaqueBg": false,
+  "bytes": 5460,
+  "src": "192x192"
+ },
+ "TT": {
+  "lum": 0.608,
+  "opaqueBg": false,
+  "bytes": 4330,
+  "src": "192x192"
+ },
+ "UP": {
+  "lum": 0.494,
+  "opaqueBg": false,
+  "bytes": 4194,
+  "src": "192x192"
+ },
+ "LGD": {
+  "lum": 0.587,
+  "opaqueBg": false,
+  "bytes": 4556,
+  "src": "192x192"
+ },
+ "G2": {
+  "lum": 0.996,
+  "opaqueBg": false,
+  "bytes": 3658,
+  "src": "192x192"
+ },
+ "MKOI": {
+  "lum": 0.564,
+  "opaqueBg": false,
+  "bytes": 3350,
+  "src": "192x192"
+ },
+ "KC": {
+  "lum": 0.72,
+  "opaqueBg": false,
+  "bytes": 3972,
+  "src": "192x192"
+ },
+ "TL": {
+  "lum": 0.936,
+  "opaqueBg": false,
+  "bytes": 3958,
+  "src": "192x192"
+ },
+ "LYON": {
+  "lum": 0.631,
+  "opaqueBg": false,
+  "bytes": 5768,
+  "src": "192x192"
+ },
+ "C9": {
+  "lum": 0.556,
+  "opaqueBg": false,
+  "bytes": 4160,
+  "src": "192x192"
+ },
+ "TSW": {
+  "lum": 1,
+  "opaqueBg": false,
+  "bytes": 2500,
+  "src": "192x192"
+ },
+ "CFO": {
+  "lum": 0.403,
+  "opaqueBg": false,
+  "bytes": 5358,
+  "src": "192x192"
+ },
+ "MVK": {
+  "lum": 0.75,
+  "opaqueBg": false,
+  "bytes": 2450,
+  "src": "192x192"
+ },
+ "LOS": {
+  "lum": 0.462,
+  "opaqueBg": false,
+  "bytes": 3368,
+  "src": "192x192"
+ },
+ "FUR": {
+  "lum": 0.245,
+  "opaqueBg": false,
+  "bytes": 3212,
+  "src": "192x192"
+ }
+}

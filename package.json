@@ -1,0 +1,17 @@
+{
+  "name": "lolgame",
+  "private": true,
+  "version": "1.0.0",
+  "description": "솔랭에서 롤드컵까지 — LoL 프로게이머 커리어 시뮬레이션 웹게임",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node test/sim-test.mjs 12 3"
+  },
+  "devDependencies": {
+    "@dicebear/core": "^9.4.2",
+    "@dicebear/toon-head": "^9.4.2",
+    "@fontsource/anton": "^5.1.0",
+    "esbuild": "0.24.0"
+  }
+}

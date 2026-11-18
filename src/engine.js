@@ -919,10 +919,13 @@ function contractDecisions(w) {
       if (keep && chance(0.9)) { p.con = randi(1, 3); p.sal = ask; if (FAME[p.nick] || o >= 86) postOf(w, p, 'extend', T.id, { years: p.con, until: w.year + p.con }); }
       else { if (NOTABLE(p)) postOf(w, p, 'thanks', T.id); stoveMove(w, p, T.id, null, 'out'); toFA(w, p); }
     }
-    for (const p of acadP(w, T)) {
+    let up = 0;
+    for (const p of acadP(w, T).sort((a, b) => ovrRaw(b) - ovrRaw(a))) {
       if (p.isUser) continue;
       if (p.age >= 22 && ovrRaw(p) < 66) { toFA(w, p); continue; }
-      const b = bestAt(w, T, p.pos); if (!b || ovrRaw(p) + (p.real ? 2 : 0) > ovrRaw(b) + (b.real ? 2 : 0) + 1 || (T.mode === 'rebuild' && ovrRaw(p) > ovrRaw(b) - 2 && p.age <= 20)) { addRoster(w, p, T); p.con = 2; p.sal = salaryFor(p); stoveMove(w, p, null, T.id, 'callup'); }
+      const b = bestAt(w, T, p.pos);
+      // 빈자리는 이적 시장에서 먼저 채운다. 2군은 지금 주전보다 확실히 나을 때만 올린다 (팀당 한 명)
+      if (b && up < 1 && ovrRaw(p) + (p.real ? 2 : 0) > ovrRaw(b) + (b.real ? 2 : 0) + (T.mode === 'rebuild' ? 1 : 3)) { addRoster(w, p, T); p.con = 2; p.sal = salaryFor(p); stoveMove(w, p, null, T.id, 'callup'); up++; }
     }
   }
 }
@@ -933,15 +936,16 @@ function runMarket(w, light) {
   for (const rg of ['LCK', 'LPL']) {
     const ids = w.ids[rg];
     const fas = w.fa.map(i => w.P[i]).filter(p => p && !p.isUser && (rg === 'LCK' ? p.nat === 'KR' : p.nat === 'CN' || p.nat === 'KR')).sort((a, b) => ovrRaw(b) - ovrRaw(a));
-    for (const p of fas) {
+    for (const pass of [1, 2]) for (const p of fas) {
       if (p.tid) continue;
-      const o = ovrRaw(p) + (p.real ? 2 : 0), ask = salaryFor(p);
+      const o = ovrRaw(p) + (p.real ? 2 : 0), ask = salaryFor(p) * (pass === 2 ? 0.7 : 1);
       let best = null, bestU = -1e9;
       for (const id of ids) {
         const T = w.teams[id], cur = bestAt(w, T, p.pos), co = cur ? ovrRaw(cur) + (cur.real ? 2 : 0) : 0;
         const weak = !cur || co < REGION_TARGET[rg] - 9;
         if (light && !weak) continue;
         if (cur && o < co + (T.mode === 'win' ? 1 : 2) && !weak) continue; // 지금 주전보다 확실히 나아야 데려간다
+        if (pass === 2 && cur && o < co + 3 && !weak) continue; // 몸값을 낮춘 2차 시장도 확실한 보강만
         if (rg === 'LPL' && p.nat === 'KR' && rosterP(w, T).filter(x => x.nat !== 'CN').length >= 2) continue;
         const room = T.money - payroll(w, T);
         const offer = ask * (T.mode === 'win' ? 1.15 : T.mode === 'rebuild' ? 0.9 : 1) * (0.9 + T.money / T.wealth * 0.15) * (rg === 'LPL' && p.nat === 'KR' ? 1.35 : 1);

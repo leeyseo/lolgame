@@ -27,7 +27,7 @@ const logoCss = logoTags.map(t => `.lg-${t}{background-image:url(data:image/webp
 const logoJs = `window.LOGO_SET=${JSON.stringify(Object.fromEntries(logoTags.map(t => [t, 1])))};`;
 
 const body = txt('./src/body.html');
-const TITLE = '솔랭에서 롤드컵까지';
+const TITLE = '솔랭에서 월즈까지';
 
 const inner = `<style>${css}\n${logoCss}</style>\n${body}\n<script>${logoJs}</script>\n<script>${safe(avatarJs)}</script>\n<script>${safe(game.code)}</script>\n`;
 

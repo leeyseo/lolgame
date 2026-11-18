@@ -1,5 +1,5 @@
 /* =========================================================
- * 솔랭에서 롤드컵까지 — 화면 (DOM, 토스 디자인 시스템 톤)
+ * 솔랭에서 월즈까지 — 화면 (DOM, 토스 디자인 시스템 톤)
  * engine.js 뒤에 같은 스크립트로 이어 붙는다.
  * ========================================================= */
 let G = null;
@@ -264,9 +264,9 @@ function vLanding() {
   const crests = crestRow('LCK') + crestRow('LPL') + `<div class="lg-league"><span class="cap">LEC · LCS · LCP · CBLOL</span><div class="crest-row">${['LEC', 'LCS', 'LCP', 'CBLOL'].map(rg => TEAMS_DATA[rg].map(d => crestOf(d[0], d[3], '', d[1])).join('')).join('')}</div></div>`;
   const feats = [['스토브리그', '누구와 뛸지 보고 골라요', '계약서에 다음 시즌 라인업과 듀오 파트너가 나와요. 이적·재계약·FA 소식은 구단 포스터로 올라와요.'], ['서명', '계약서에 직접 서명해요', '첫 계약은 손가락이나 마우스로 직접 사인하고, 이후 계약서마다 내 서명이 들어가요.'], ['패치', '시즌마다 메타가 바뀌어요', '라인전·한타·운영·캐리 메타에 따라 같은 능력치도 가치가 달라져요.'], ['챔피언', '시그니처 챔피언을 정해요', '메타와 맞으면 더 자주 꺼내고 더 크게 활약해요.'], ['스킨', '롤드컵 우승 스킨을 남겨요', '우승하면 챔피언을 직접 골라 팀 로고와 내 서명이 들어간 스킨을 받아요.']];
   return `<div class="shell">
-    <header class="hd"><div><div class="hd-t">솔랭에서 롤드컵까지</div><div class="hd-s">LCK·LPL 실제 구단으로 쌓는 프로게이머 인생</div></div></header>
+    <header class="hd"><div><div class="hd-t">솔랭에서 월즈까지</div><div class="hd-s">LCK·LPL 실제 구단으로 쌓는 프로게이머 인생</div></div></header>
     <main class="stack pb-cta">
-      <section class="card"><p class="eyebrow">16살, 솔랭 다이아몬드에서 시작해요</p><h1 class="display">솔랭에서<br>롤드컵까지</h1><p class="body">한 시즌의 활약과 선택이 쌓여 커리어가 돼요.<br>데뷔, 우승, 롤드컵까지 도전해 보세요.</p></section>
+      <section class="card"><p class="eyebrow">16살, 솔랭 다이아몬드에서 시작해요</p><h1 class="display">솔랭에서<br>월즈까지</h1><p class="body">한 시즌의 활약과 선택이 쌓여 커리어가 돼요.<br>데뷔, 우승, 월즈까지 도전해 보세요.</p></section>
       ${journeyCard(has ? su.seed : 'm-landing-hero')}
       <section class="card"><h2 class="t2">롤 선수라서 겪는 일</h2><div class="feats">${feats.map(([k, t, d]) => `<div class="feat"><span class="badge blue">${k}</span><div><b>${t}</b><p>${d}</p></div></div>`).join('')}</div></section>
       <section class="card">${hofCard(hof)}</section>
@@ -336,7 +336,7 @@ function vApp() {
   const r = t === 'react' ? tReact() : t === 'season' ? tSeason() : t === 'player' ? tPlayer() : t === 'record' ? tRecord() : tHome();
   const TT = themeTeam();
   const th = TT ? ` themed" style="--tc:${TT.color};--tc-ink:${lum(TT.color) > 0.6 ? '#191F28' : '#FFFFFF'};--tc-on:${lum(TT.color) > 0.6 ? '#191F28' : TT.color}` : '';
-  return `<div class="shell${th}"><header class="hd">${TT ? crest(TT, 'hd-crest') : ''}<div style="flex:1;min-width:0"><div class="hd-t">${TT ? esc(TT.name) + (userP(G).acad ? ' 2군' : G.user.stage === 'TRAINEE' ? ' 아카데미' : '') : '솔랭에서 롤드컵까지'}</div><div class="hd-s">${G.year} 시즌${G.phase === 'OFF' ? ' 이후 · 오프시즌' : ''}${TT ? ' · 솔랭에서 롤드컵까지' : ''}</div></div><button class="icon-btn" data-a="settings" aria-label="설정">${IC.gear}</button></header>
+  return `<div class="shell${th}"><header class="hd">${TT ? crest(TT, 'hd-crest') : ''}<div style="flex:1;min-width:0"><div class="hd-t">${TT ? esc(TT.name) + (userP(G).acad ? ' 2군' : G.user.stage === 'TRAINEE' ? ' 아카데미' : '') : '솔랭에서 월즈까지'}</div><div class="hd-s">${G.year} 시즌${G.phase === 'OFF' ? ' 이후 · 오프시즌' : ''}${TT ? ' · 솔랭에서 월즈까지' : ''}</div></div><button class="icon-btn" data-a="settings" aria-label="설정">${IC.gear}</button></header>
     <main class="stack pb-tab ${r.cta ? 'pb-cta' : ''}">${r.html}</main>${r.cta ? `<div class="cta-bar with-tab">${r.cta}</div>` : ''}${tabbar()}</div>`;
 }
 function themeTeam() { const u = userP(G); if (u.mil) return null; if (u.tid) return G.teams[u.tid]; if (G.user.stage === 'TRAINEE' && G.user.trainee) return G.teams[G.user.trainee]; return null; }
@@ -961,7 +961,7 @@ function vEnd() {
   const sec = (i, html, cls) => `<section class="card end-sec ${cls || ''}" style="--d:${i}">${html}</section>`;
   const look = (E.look || []).map(l => `<div class="look"><div class="look-h"><span class="look-pct">${l.pct}%</span><div><p class="cap">${esc(l.title)}</p><b class="t2">${esc(l.who)}</b></div></div><p class="body" style="margin:6px 0 0">${esc(l.desc)}</p><div class="chips" style="margin-top:8px">${l.reasons.map(r => `<span class="badge">${esc(r)}</span>`).join('')}</div></div>`).join('');
   const tl = (E.timeline || []).map(h => `<div class="tl-row">${h.tid && G && G.teams[h.tid] ? crest(G.teams[h.tid], 'xs') : '<span class="crest xs" style="background:var(--grey200)"></span>'}<span class="tl-y">${h.y}</span><span class="tl-t">${esc(h.team)} · ${esc(h.role)}</span><span class="tl-o">OVR ${h.ovr}</span>${h.titles.length || h.awards.length ? `<span class="tl-h">${[...h.titles, ...h.awards].map(esc).join(' · ')}</span>` : ''}</div>`).join('');
-  return `<div class="shell"><header class="hd"><div><div class="hd-t">솔랭에서 롤드컵까지</div><div class="hd-s">커리어 요약</div></div></header>
+  return `<div class="shell"><header class="hd"><div><div class="hd-t">솔랭에서 월즈까지</div><div class="hd-s">커리어 요약</div></div></header>
     <main class="stack pb-cta">
       ${sec(0, `${E.sig ? `<div class="sig-mark">${sigSVG(E.sig.strokes)}</div>` : ''}<img class="av lg" src="${avatarURI(E.seed, E.color)}" alt=""><h1 class="t1" style="margin-top:10px">${esc(E.nick)}</h1><p class="cap">${POS_KO[E.pos]} · ${E.seasons}시즌 · ${E.age}살 은퇴 · 시그니처 ${esc(E.champ)}</p><div class="grade" style="margin-top:16px">${E.grade}</div><p class="body">커리어 점수 ${E.score}점 · 명예의 전당 ${E.rank}위</p>`, 'center has-sig')}
       ${look ? sec(1, `<h2 class="t2">닮은 선수</h2><p class="cap">내 커리어와 가장 닮은 실제 선수예요. 실제 선수 설명은 공개된 커리어 기록을 바탕으로 했어요.</p><div class="looks">${look}</div>`) : ''}

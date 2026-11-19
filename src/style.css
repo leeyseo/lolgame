@@ -124,6 +124,18 @@ button, input { font: inherit; color: inherit; }
 .li .tx b { font-size: 16px; font-weight: 600; }
 .li .tx span { font-size: 13px; color: var(--grey600); }
 .li .chev { color: var(--grey400); width: 20px; height: 20px; flex: none; }
+/* 카드 안의 응원 남기기 버튼: 카드 패딩과 겹치지 않게 */
+.contact { display: grid; margin-top: 6px; }
+.card .contact .li { padding: 12px 0; border-radius: 0; background: transparent; }
+/* 응원 메시지 팝업 */
+.textarea { width: 100%; min-height: 132px; border: 0; border-radius: 14px; background: var(--grey100); padding: 14px 16px; font: inherit; font-size: 16px; line-height: 1.5; color: var(--grey900); resize: vertical; box-sizing: border-box; }
+.textarea:focus { outline: 2px solid var(--blue500); background: #fff; }
+.textarea:disabled { opacity: .6; }
+.cheer-meta { display: flex; justify-content: space-between; gap: 12px; font-size: 12px; color: var(--grey500); margin-top: -4px; }
+.cheer-meta span:last-child { flex: none; }
+.fine.err { color: var(--red500); }
+/* 자동 입력 봇만 채우는 숨은 칸 */
+.hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
 .ic.blue { background: var(--blue50); color: var(--blue500); }
 .ic.red { background: var(--red50); color: var(--red500); }
 .ic.green { background: var(--green50); color: var(--green500); }
@@ -366,11 +378,6 @@ button, input { font: inherit; color: inherit; }
 .path-li { padding: 14px 6px; border-radius: 16px; }
 .path-li .tx > span:not(.lu-mini) { display: block; }
 .turn-card { box-shadow: inset 0 0 0 2px var(--orange50); }
-.shop-teaser { display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 0; text-align: left; cursor: pointer; width: 100%; font: inherit; color: inherit; }
-.shop-teaser b { font-size: 16px; display: inline-flex; align-items: center; gap: 6px; }
-.shop-teaser > span:first-child { display: grid; gap: 2px; }
-.shop-teaser .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--red500); display: inline-block; }
-.shop-teaser .chev { color: var(--grey400); width: 20px; height: 20px; flex: none; }
 .retire-btn { margin-top: 4px; background: #fff; }
 .sheet .stage { max-width: 100%; margin: 0; }
 
@@ -557,12 +564,50 @@ button, input { font: inherit; color: inherit; }
 .cast-k b { color: var(--grey900); font-size: 18px; }
 .cast-bar { height: 8px; border-radius: 4px; background: #E8505B; overflow: hidden; }
 .cast-bar i { display: block; height: 100%; background: var(--blue500); transition: width .3s; }
-.cast-feed { display: grid; gap: 6px; margin-top: 6px; max-height: 340px; overflow-y: auto; }
-.cf { display: grid; grid-template-columns: 40px 1fr; gap: 8px; padding: 8px 10px; border-radius: 12px; animation: rise .3s ease both; }
-.cf.a { background: var(--blue50); }
-.cf.b { background: var(--red50); }
-.cf span { font-size: 12px; font-weight: 700; color: var(--grey600); padding-top: 2px; }
-.cf p { margin: 0; font-size: 14px; font-weight: 500; }
+/* 결승 미니맵 중계: 직접 그린 소환사의 협곡 도식 + 10명의 점, 해설은 지도 아래 */
+.mm-wrap { margin-top: 10px; display: grid; place-items: center; }
+.mm { width: 100%; max-width: 420px; aspect-ratio: 1; display: block; border-radius: 16px; background: #14281F; }
+.mm-bg { fill: #1B3A2B; }
+.mm-jg circle { fill: #15301F; }
+.mm-river { fill: #24506A; opacity: .9; }
+.mm-lane { fill: none; stroke: #9C9070; stroke-width: 3.4; stroke-linecap: round; stroke-linejoin: round; opacity: .5; }
+.mm-base.s0 { fill: #1F4F86; opacity: .75; } .mm-base.s1 { fill: #7A2836; opacity: .75; }
+.mm-pit.baron { fill: #32285A; stroke: #8E7FD6; stroke-width: .6; } .mm-pit.drake { fill: #4E3818; stroke: #D79A2B; stroke-width: .6; }
+.mm-nx.s0 { fill: #7FB6FF; } .mm-nx.s1 { fill: #FF8F99; }
+.mm-tw { stroke: rgba(0,0,0,.35); stroke-width: .3; transition: opacity .4s; }
+.mm-tw.s0 { fill: #8EC0FF; } .mm-tw.s1 { fill: #FF9EA6; }
+.mm-tw.inhib { rx: 1.2; }
+.mm-tw.down { opacity: .14; }
+.mm-d circle { stroke: #fff; stroke-width: .45; }
+.mm-d.s0 circle { fill: #3182F6; } .mm-d.s1 circle { fill: #F04452; }
+.mm-d text { fill: #fff; font-size: 2.6px; font-weight: 800; text-anchor: middle; font-family: var(--f); pointer-events: none; }
+.mm-d .ring { fill: none !important; stroke: #FFD43B; stroke-width: .7; }
+.mm-d .lbl { fill: #FFD43B; font-size: 2.8px; }
+.mm-d.me circle:not(.ring) { stroke: #FFD43B; stroke-width: .7; }
+.mm-d.dead { opacity: 0; }
+.mm-xk { fill: none; stroke-width: .8; stroke-linecap: round; }
+.mm-xk.s0 { stroke: #8EC0FF; } .mm-xk.s1 { stroke: #FF9EA6; }
+.mm-fx { fill: none; stroke-width: .6; }
+.mm-fx.s0 { stroke: #8EC0FF; } .mm-fx.s1 { stroke: #FF9EA6; } .mm-fx.sn { stroke: #FFE08A; }
+.mm-sides { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; font-weight: 600; margin-top: 6px; }
+.mm-sides .s0 { color: var(--blue600); } .mm-sides .s1 { color: var(--red500); }
+.mm-talk { display: grid; gap: 6px; margin-top: 6px; }
+.mm-call { display: grid; grid-template-columns: 48px 1fr; gap: 10px; align-items: start; padding: 12px 14px; border-radius: 14px; background: #101622; color: #fff; animation: rise .3s ease both; }
+.mm-call span { font: 400 15px/1.4 'Anton', Impact, sans-serif; color: #8B95A1; }
+.mm-call p { margin: 0; font-size: 16px; font-weight: 700; line-height: 1.45; }
+.mm-call.s0 { box-shadow: inset 4px 0 0 #3182F6; } .mm-call.s1 { box-shadow: inset 4px 0 0 #F04452; } .mm-call.sn { box-shadow: inset 4px 0 0 #FFD43B; }
+.mm-feed { display: grid; gap: 2px; max-height: 200px; overflow-y: auto; }
+.mm-li { display: grid; grid-template-columns: 48px 1fr; gap: 10px; padding: 6px 14px; font-size: 14px; color: var(--grey700); }
+.mm-li span { font-size: 12px; font-weight: 700; color: var(--grey500); font-variant-numeric: tabular-nums; padding-top: 1px; }
+.mm-li p { margin: 0; }
+.mm-li.s0 span { color: var(--blue500); } .mm-li.s1 span { color: var(--red500); }
+.mm-picks { display: grid; gap: 4px; margin-top: 8px; padding-top: 10px; border-top: 1px solid var(--grey100); }
+.mp-r { display: grid; grid-template-columns: 1fr 28px 1fr; gap: 6px; align-items: baseline; font-size: 13px; }
+.mp-r > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mp-r > span:first-child { color: var(--blue700); } .mp-r > span.r { text-align: right; color: #C2303D; }
+.mp-r small { color: var(--grey500); font-size: 12px; }
+.mp-r .me { font-weight: 800; }
+.mp-pos { text-align: center; font-size: 11px; color: var(--grey500); font-weight: 700; }
 .cast-end { display: grid; justify-items: center; gap: 6px; text-align: center; padding: 18px 0 6px; }
 .cast-end.win .t1 { color: #B07D00; }
 
@@ -661,3 +706,31 @@ button, input { font: inherit; color: inherit; }
 
 .hle-word { display: grid; justify-items: center; }
 .poster.pv.tpl-hle.two .hle-word { font-size: 15cqw; top: 14%; }
+
+/* 스토브리그 속보: 이적시장 속보 계정 게시물 모양 (게임 속 가상 매체) */
+.brk { display: grid; gap: 10px; }
+.brk-list { display: grid; gap: 0; }
+.brk-list .brk { padding: 14px 0; border-top: 1px solid var(--grey100); }
+.brk-list .brk:first-child { border-top: 0; }
+.brk-hd { display: flex; align-items: center; gap: 10px; }
+.brk-logo { width: 36px; height: 36px; border-radius: 50%; background: #191F28; color: #FFD43B; display: grid; place-items: center; flex: none; }
+.brk-logo svg { width: 18px; height: 18px; fill: #FFD43B; stroke: none; }
+.brk-acc { flex: 1; min-width: 0; display: grid; }
+.brk-acc b { font-size: 15px; }
+.brk-acc span { font-size: 12px; color: var(--grey500); }
+.brk-tag { font-size: 11px; font-weight: 800; letter-spacing: .06em; border-radius: 6px; padding: 3px 7px; background: var(--grey100); color: var(--grey700); flex: none; }
+.brk-tag.red { background: var(--red500); color: #fff; } .brk-tag.dark { background: #191F28; color: #fff; } .brk-tag.blue { background: var(--blue500); color: #fff; } .brk-tag.amber { background: var(--orange50); color: #C46A00; }
+.brk-tx { margin: 0; font-size: 16px; font-weight: 600; line-height: 1.5; color: var(--grey900); }
+.brk.compact .brk-tx { font-size: 15px; }
+.brk-card { display: flex; align-items: center; gap: 10px; background: var(--grey50); border-radius: 14px; padding: 10px 12px; }
+.brk-who { flex: 1; min-width: 0; display: grid; }
+.brk-who b { font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.brk-who small { font-size: 12px; color: var(--grey600); }
+.brk-flow { display: flex; align-items: center; gap: 6px; flex: none; }
+.brk-ar { font-size: 12px; font-weight: 700; color: var(--grey600); }
+.crest.brk-fa { background: var(--grey200); color: var(--grey700); }
+.brk-ft { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; font-size: 13px; color: var(--grey500); }
+/* 카드만 캡처돼도 실제 기사로 오해받지 않게, 카드 안에 가상 기사 표시를 넣는다 */
+.brk-fake { margin-left: auto; font-size: 11px; font-weight: 700; color: var(--grey600); background: var(--grey100); border-radius: 6px; padding: 3px 7px; white-space: nowrap; }
+.ro-v.face { background: var(--gold50); color: #B07D00; }
+@media (prefers-reduced-motion: reduce) { .mm-call { animation: none; } .mm-tw { transition: none; } }

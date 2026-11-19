@@ -21,7 +21,9 @@ function wIdx(ws) { let x = R() * sum(ws); for (let i = 0; i < ws.length; i++) {
 
 /* ---------- 기본 데이터 ---------- */
 const START_YEAR = 2027;
-const POS = ['TOP', 'JGL', 'MID', 'ADC', 'SUP'];
+// 커리어 상한: 31살 시즌이 마지막. 그 전에도 계약이 끝났는데 불러주는 팀이 없으면 은퇴한다
+const MAX_AGE = 31;
+const POS =['TOP', 'JGL', 'MID', 'ADC', 'SUP'];
 const POS_KO = { TOP: '탑', JGL: '정글', MID: '미드', ADC: '원딜', SUP: '서포터' };
 const STATS = ['lane', 'tf', 'macro', 'mech', 'mental', 'pool'];
 const STAT_KO = { lane: '라인전', tf: '한타', macro: '운영', mech: '피지컬', mental: '멘탈', pool: '챔프폭' };
@@ -94,7 +96,40 @@ const ACADEMY_DATA = {"GEN":[["TOP","Ripple"],["JGL","Courage"],["MID","Kemish"]
 const REAL_NAME = {"Kiin":"김기인","Ripple":"변종민","Canyon":"김건부","Courage":"전현민","Chovy":"정지훈","Kemish":"김시훈","Ruler":"박재혁","MUDAI":"이선규","Duro":"주민규","SIRIUSS":"고건","Lumos":"김재민","Zeus":"최우제","Panther":"박지호","Kanavi":"서진혁","Jackal":"이수민","Zeka":"김건우","Cracker":"이정욱","Valiant":"한강현","Gumayusi":"이민형","Pyeonsik":"편민기","Delight":"유환중","Bluffing":"박규용","PerfecT":"이승민","Sero":"안효찬","Cuzz":"문우찬","Sylvie":"이승복","Bdd":"곽보성","Hwichan":"정휘찬","Aiming":"김하람","FenRir":"박강준","Ghost":"장용준","Pollu":"오동규","Effort":"이상호","Doran":"최현준","Haetae":"심수현","Guardian":"성태효","Oner":"문현준","Painter":"김은후","Faker":"이상혁","Guti":"문정환","Peyz":"김수환","Cypher":"김유준","Keria":"류민석","Cloud":"문현호","Siwoo":"전시우","Jaehyuk":"권재혁","Nevid":"박민우","Lucid":"최용혁","Sharvel":"김단우","ShowMaker":"허수","Garden":"설정원","Smash":"신금재","Wayne":"황서현","Career":"오형석","Loopy":"김동현","Clear":"송현민","Kangin":"최강인","Raptor":"전어진","Zephyr":"황혁수","VicLa":"이대광","Daystar":"유지명","FIESTA":"안현서","Diable":"남대근","Slayer":"김진영","Kellin":"김형규","Luon":"이현호","Kingen":"황성훈","Janus":"엄예준","Sponge":"배영준","MihawK":"김주형","Scout":"이예찬","Calix":"선현빈","SeTab":"송경진","Taeyoon":"김태윤","Lucy":"현수훈","Lehends":"손시우","Pleata":"손민우","Casting":"신민제","DDahyuk":"안민혁","GIDEON":"김민성","Dinai":"황치현","Fisher":"이정태","Roamer":"조우진","Tempester":"오영웅","Teddy":"박진성","OddEye":"조형진","Namgung":"남궁성훈","PlanB":"홍준석","Rich":"이재원","Frog":"이민회","Vincenzo":"하승민","Willer":"김정현","Winner":"우주성","Ucal":"손우현","AKaJe":"최수혁","Jiwoo":"정지우","LazyFeel":"쩐바오민","Andil":"문관빈","Minous":"강민우","DuDu":"이동주","Lancer":"한정흠","Pyosik":"홍창현","DDoiV":"방문영","Clozer":"이주현","Flip":"김상욱","deokdam":"서대길","Enosh":"곽규준","Peter":"정윤수","Life":"김정민","Quantum":"손정환"};
 // 리그 전력 목표치: 은퇴·이적으로 빈자리를 채울 유망주 수준의 기준
 const REGION_TARGET = { LCK: 82, LPL: 81, LEC: 80, LCS: 77, LCP: 76, CBLOL: 73 };
-const FAME = { Faker: 100, Chovy: 88, Keria: 86, Canyon: 82, Ruler: 84, Zeus: 86, Gumayusi: 85, Oner: 82, Knight: 84, Viper: 86, Bin: 82, Caps: 84, ShowMaker: 80, TheShy: 82, Rookie: 80, JackeyLove: 82, Peyz: 78, Kanavi: 80, Zeka: 80, Doran: 76, CoreJJ: 74 };
+const FAME = { Faker: 100, Chovy: 88, Keria: 86, Canyon: 82, Ruler: 84, Zeus: 86, Gumayusi: 85, Oner: 82, Knight: 84, Viper: 86, Bin: 82, Caps: 84, ShowMaker: 84, TheShy: 82, Rookie: 80, JackeyLove: 82, Peyz: 78, Kanavi: 80, Zeka: 80, Doran: 76, CoreJJ: 74, Bdd: 74, Xiaohu: 76, Kiin: 76, Elyoya: 70, Blaber: 70 };
+/* 팀의 얼굴(프랜차이즈 스타): 그 팀을 대표하는 선수. 재계약을 우선하고 오래 뛰며, 떠나거나 은퇴하면 큰 속보가 된다 */
+const FRANCHISE = { Faker: 'T1', ShowMaker: 'DK', Chovy: 'GEN', Ruler: 'GEN', Zeka: 'HLE', Bdd: 'KT', Bin: 'BLG', Xiaohu: 'WBG', Rookie: 'IG', TheShy: 'IG', JackeyLove: 'TES', Caps: 'G2', Elyoya: 'MKOI', CoreJJ: 'TL', Blaber: 'C9' };
+// 사실상 팀을 떠나지 않는 원클럽 레전드
+const ONECLUB = { Faker: 1, ShowMaker: 1, Bin: 1, Caps: 1 };
+/* 빈자리를 채우는 실존 선수 풀: 게임 시작 때 리그에 없는 실제 선수들 (2026 시즌 공개 로스터 기준).
+ * 은퇴·이적으로 생긴 자리는 이 풀에서 먼저 채우고, 다 쓰면 그때 가상 선수를 만든다.
+ * [닉네임, 포지션, 2027년 나이(추정), 수준(게임 속 OVR 기준), 한글 본명, 비고('FA' = 시작부터 무소속)] */
+const POOL_DATA = {
+  // 한국 선수: LCK CL 유망주, 해외 리그에서 뛰는 한국 선수(복귀 후보), 무소속
+  KR: [['Jinbeom', 'ADC', 19, 66, '천진범'], ['Solid', 'JGL', 19, 66, '남현서'], ['MG', 'MID', 25, 70, '이지훈'], ['Hype', 'ADC', 24, 75, '변정현', 'FA'], ['Ellim', 'JGL', 26, 72, '최엘림', 'FA'],
+    ['Impact', 'TOP', 32, 76, '정언영'], ['Huhi', 'SUP', 32, 75, '최재현'], ['IgNar', 'SUP', 31, 74, '이동근'], ['Photon', 'TOP', 25, 75, ''], ['HamBak', 'JGL', 23, 73, ''], ['Jun', 'SUP', 27, 76, '윤세준'],
+    ['Aria', 'MID', 26, 73, '이가을'], ['Vsta', 'SUP', 25, 72, '오효성'], ['Gaeng', 'SUP', 26, 70, ''], ['YoungJae', 'JGL', 26, 72, ''], ['Mireu', 'MID', 27, 71, '']],
+  // LPL 서브·무소속 베테랑
+  // LPL 서브·무소속 베테랑 (위 KR 중 해외 리그에서 뛰는 선수의 소속 리그는 KR_HOME)
+  CN: [['Flandre', 'TOP', 29, 80, '', 'FA'], ['Soboro', 'TOP', 22, 78], ['Ale', 'TOP', 27, 79], ['naiyou', 'JGL', 23, 80], ['Renard', 'MID', 21, 77], ['Yagao', 'MID', 27, 79, '', 'FA'], ['Cryin', 'MID', 27, 78],
+    ['Photic', 'ADC', 25, 80], ['Light', 'ADC', 26, 79], ['Lwx', 'ADC', 27, 77], ['Jwei', 'SUP', 22, 77], ['fengyue', 'SUP', 23, 78], ['Crisp', 'SUP', 28, 78, '', 'FA'], ['Ming', 'SUP', 28, 78], ['Missing', 'SUP', 25, 79],
+    ['Wayward', 'TOP', 25, 77], ['Solokill', 'TOP', 24, 76], ['fearness', 'TOP', 22, 76], ['Invincible', 'TOP', 23, 76], ['Leyan', 'JGL', 25, 77], ['Weiwei', 'JGL', 26, 77], ['Jinjiao', 'JGL', 24, 76], ['Bo', 'JGL', 24, 77],
+    ['Shanji', 'MID', 25, 77], ['Huanfeng', 'ADC', 24, 77], ['Able', 'ADC', 24, 76], ['Hang', 'SUP', 26, 77], ['Lvmao', 'SUP', 26, 76], ['Ppgod', 'SUP', 25, 76], ['Iwandy', 'SUP', 25, 76], ['Mark', 'SUP', 27, 76]],
+  LEC: [['Empyros', 'TOP', 21, 78], ['Razork', 'JGL', 26, 79], ['Vladi', 'MID', 22, 79], ['Upset', 'ADC', 28, 79], ['Lospa', 'SUP', 22, 77], ['Lot', 'TOP', 23, 76], ['ISMA', 'JGL', 22, 76], ['Jackies', 'MID', 23, 76], ['Noah', 'ADC', 24, 76],
+    ['Maynter', 'TOP', 24, 76], ['Rhilech', 'JGL', 24, 76], ['Poby', 'MID', 21, 77], ['Parus', 'SUP', 24, 75], ['Naak Nako', 'TOP', 22, 77], ['Lyncas', 'JGL', 24, 77], ['Humanoid', 'MID', 27, 79], ['Carzzy', 'ADC', 26, 78], ['Fleshy', 'SUP', 24, 77],
+    ['Tracyn', 'TOP', 23, 75], ['Sheo', 'JGL', 25, 76], ['Serin', 'MID', 23, 75], ['Ice', 'ADC', 24, 76], ['Stend', 'SUP', 25, 75], ['Rooster', 'TOP', 22, 74], ['Boukada', 'JGL', 22, 74], ['nuc', 'MID', 23, 75], ['Paduck', 'ADC', 24, 75], ['Trymbi', 'SUP', 26, 75],
+    ['Wunder', 'TOP', 29, 77], ['Skeanz', 'JGL', 24, 75], ['LIDER', 'MID', 27, 75], ['Jopa', 'ADC', 23, 75], ['Mikyx', 'SUP', 29, 77]],
+  LCS: [['DARKWINGS', 'MID', 23, 75], ['Rahel', 'ADC', 23, 75], ['APA', 'MID', 23, 76], ['Zven', 'ADC', 31, 75], ['eXyu', 'JGL', 24, 73], ['Palafox', 'MID', 26, 74], ['FBI', 'ADC', 28, 74],
+    ['Gakgos', 'TOP', 22, 75], ['Gryffinn', 'JGL', 23, 75], ['Quad', 'MID', 24, 76], ['Massu', 'ADC', 22, 76], ['Cryogen', 'SUP', 23, 74], ['Zamudo', 'TOP', 24, 74], ['Fudge', 'TOP', 25, 74], ['Contractz', 'JGL', 27, 73],
+    ['Zinie', 'MID', 24, 73], ['Bvoy', 'ADC', 28, 73], ['Ceos', 'SUP', 26, 73], ['Castle', 'TOP', 24, 71], ['KryRa', 'JGL', 24, 71], ['Calime', 'MID', 24, 71], ['Sajed', 'ADC', 24, 71], ['Lyonz', 'SUP', 24, 71]],
+  LCP: [['Pungyeon', 'MID', 23, 75], ['2247', 'SUP', 24, 74], ['Evi', 'TOP', 27, 73], ['Van', 'JGL', 24, 72], ['Marble', 'ADC', 24, 72], ['Kiaya', 'TOP', 26, 74], ['Draktharr', 'JGL', 24, 73], ['Aress', 'MID', 24, 73], ['Artemis', 'ADC', 24, 74], ['Taki', 'SUP', 24, 72],
+    ['Flauren', 'TOP', 23, 72], ['665', 'JGL', 24, 72], ['HongSuo', 'MID', 24, 72], ['Feng', 'ADC', 24, 72], ['ShiauC', 'SUP', 24, 71], ['RayFarky', 'TOP', 25, 71], ['Citrus', 'JGL', 24, 71], ['Keine', 'MID', 24, 71], ['Kakkun', 'ADC', 24, 71],
+    ['SofM', 'JGL', 30, 74], ['Shogun', 'ADC', 24, 72], ['Elio', 'SUP', 24, 71], ['Hiro02', 'TOP', 24, 73], ['1Jiang', 'TOP', 24, 70], ['Husha', 'JGL', 24, 70], ['JimieN', 'MID', 24, 70], ['Shunn', 'ADC', 24, 70], ['Orca', 'SUP', 24, 70]],
+  CBLOL: [['curty', 'TOP', 24, 71], ['Peach', 'JGL', 24, 71], ['Hauz', 'MID', 24, 71], ['Bao', 'ADC', 24, 71], ['ProDelta', 'SUP', 26, 71], ['Devost', 'TOP', 24, 71], ['Booki', 'JGL', 24, 71], ['Enga', 'MID', 24, 71], ['Ceo', 'ADC', 24, 71], ['TopLop', 'SUP', 24, 71],
+    ['xyno', 'TOP', 24, 72], ['Mago', 'MID', 24, 72], ['Bull', 'ADC', 24, 72], ['RedBert', 'SUP', 27, 72], ['Robo', 'TOP', 27, 72], ['CarioK', 'JGL', 26, 72], ['Tinowns', 'MID', 29, 72], ['Marvin', 'ADC', 24, 72], ['Kuri', 'SUP', 24, 71],
+    ['fNb', 'TOP', 28, 71], ['DOOM', 'JGL', 24, 71], ['Kaze', 'MID', 24, 71], ['Rabelo', 'ADC', 24, 71], ['frosty', 'SUP', 24, 70], ['Boal', 'TOP', 24, 71], ['Disamis', 'JGL', 24, 71], ['Morttheus', 'ADC', 24, 71], ['Kaiwing', 'SUP', 30, 71], ['Drakehero', 'JGL', 24, 71]],
+};
+const KR_HOME = { Impact: 'LCS', Huhi: 'LCS', IgNar: 'LCS', Photon: 'LCS', HamBak: 'LCS', Jun: 'LEC', Aria: 'LCP', Vsta: 'LCP', Gaeng: 'LCP', YoungJae: 'CBLOL', Mireu: 'CBLOL' };
 
 /* 챔피언 (이름만 쓴다). 두 번째 값은 성향 태그로, 시즌마다 바뀌는 패치 메타와 맞물린다 */
 const CHAMPS = {
@@ -124,7 +159,7 @@ function hasBatchim(word) {
   const c = s[s.length - 1], code = c.charCodeAt(0);
   if (code >= 0xAC00 && code <= 0xD7A3) return (code - 0xAC00) % 28 !== 0;
   if (/[0-9]/.test(c)) return '013678'.includes(c);
-  if (/[a-zA-Z]/.test(c)) return 'LMNRlmnr'.includes(c);
+  if (/[a-zA-Z]/.test(c)) return 'LMNlmn'.includes(c); // Faker(페이커)·Ruler(룰러)처럼 r로 끝나면 받침 없음
   return false;
 }
 const jo = (word, a, b) => (hasBatchim(word) ? a : b);
@@ -157,7 +192,7 @@ function makeHandle(w, nat) {
   for (;;) { const h = pick(HANDLES) + pick(KR_SYL).toLowerCase(); if (!w.usedH[h]) { w.usedH[h] = 1; return h; } }
 }
 // 해외 리그에서 뛰는 한국 선수 (국적: 이적 규칙에 쓰인다)
-const KR_ABROAD = { TheShy: 1, Rookie: 1, Viper: 1, Tarzan: 1, Kael: 1, BullDoG: 1, Croco: 1, Canna: 1, Kyeahoo: 1, CoreJJ: 1, Berserker: 1, Quid: 1, Thanatos: 1, Morgan: 1, Saint: 1 };
+const KR_ABROAD = { TheShy: 1, Rookie: 1, Viper: 1, Tarzan: 1, Kael: 1, BullDoG: 1, Croco: 1, Canna: 1, Kyeahoo: 1, CoreJJ: 1, Berserker: 1, Quid: 1, Thanatos: 1, Morgan: 1, Saint: 1, Karis: 1, Hena: 1, Grizzly: 1, Juhan: 1 };
 const natOf = (region, nick) => (nick && KR_ABROAD[nick] ? 'KR' : region === 'LCK' ? 'KR' : region === 'LPL' ? 'CN' : region);
 function genPlayer(w, pos, target, age, region, realNick) {
   const p = {
@@ -177,6 +212,47 @@ function genPlayer(w, pos, target, age, region, realNick) {
   w.P[p.id] = p;
   return p;
 }
+// 실존 선수 풀에서 한 명을 데려온다. 지금 나이·수준은 2027년 기준값에서 흐른 시간만큼 보정한다
+function poolLevel(e, dy) {
+  const a0 = e[2];
+  return e[3] + (a0 <= 21 ? Math.min(9, dy * 2.2) : a0 <= 24 ? Math.min(3, dy) : 0) - Math.max(0, a0 + dy - 28) * 1.2;
+}
+function poolPick(w, pos, src, opt) {
+  const o = opt || {}, dy = w.year - START_YEAR, c = [];
+  for (const k of src) for (const e of POOL_DATA[k] || []) {
+    if (w.usedH[e[0]] || (pos && e[1] !== pos)) continue;
+    if (o.fa != null && (e[5] === 'FA') !== o.fa) continue;
+    const age = e[2] + dy;
+    if (age > (o.maxAge || 33) || (o.young && age > 21)) continue;
+    c.push({ e, k, age, lv: poolLevel(e, dy) });
+  }
+  if (!c.length) return null;
+  // 필요한 수준에 가까운 선수부터 (약간의 무작위)
+  const tg = o.target == null ? 75 : o.target;
+  c.forEach(x => { x.sc = Math.abs(x.lv - tg) + rand(0, 3); });
+  c.sort((a, b) => a.sc - b.sc);
+  const { e, k, age, lv } = c[0];
+  const p = genPlayer(w, e[1], lv, age, o.region || (k === 'KR' ? 'LCK' : k === 'CN' ? 'LPL' : k), e[0]);
+  p.nat = k === 'KR' ? 'KR' : k === 'CN' ? 'CN' : k;
+  p.name = e[4] || REAL_NAME[e[0]] || '';
+  p.from = k === 'KR' ? KR_HOME[e[0]] || 'KR' : k; // 어디서 왔는지 (해외 리그 출신이면 'LCS' 등)
+  return p;
+}
+// 빈자리를 채울 새 얼굴: 실존 선수 풀이 먼저, 다 쓰면 가상 선수
+function newcomer(w, pos, target, a0, a1, region, opt) {
+  const src = region === 'LCK' ? ['KR'] : region === 'LPL' ? ['CN'] : [region];
+  return poolPick(w, pos, src, Object.assign({ target, region }, opt || {})) || genPlayer(w, pos, target, randi(a0, a1), region);
+}
+// 팀의 얼굴: 프랜차이즈 스타가 있으면 그 선수, 없으면 팀에서 가장 이름값 있는 선수 (내가 될 수도 있다)
+function teamFace(w, T) {
+  if (!T) return null;
+  const ro = rosterP(w, T).filter(p => !p.mil);
+  const fr = ro.filter(p => FRANCHISE[p.nick] === T.id && !p.isUser).sort((a, b) => b.pop - a.pop)[0];
+  if (fr) return fr;
+  const top = ro.filter(p => p.real || p.isUser).sort((a, b) => b.pop - a.pop)[0];
+  return top && top.pop >= 45 ? top : null;
+}
+const isFranchise = (p, tid) => !!p && FRANCHISE[p.nick] === (tid || p.tid);
 
 /* ---------- 팀/로스터 ---------- */
 const userP = w => w.P[w.user.pid];
@@ -197,7 +273,7 @@ function bestAcadAt(w, T, pos, excl) { const c = acadP(w, T).filter(p => p.pos =
 function anyAt(w, T, pos) { const c = rosterP(w, T).concat(acadP(w, T)).filter(p => p.pos === pos && !p.mil && !p.isUser); c.sort((a, b) => ovrRaw(b) - ovrRaw(a)); return c[0] || null; }
 function emergency(w, T, pos) {
   const p = anyAt(w, T, pos); if (p) return p;
-  const np = genPlayer(w, pos, Math.min(70, T.base - 12), 19, T.region); if (T.region === 'LCK') addAcad(w, np, T); else addRoster(w, np, T); return np;
+  const np = newcomer(w, pos, Math.min(70, T.base - 12), 18, 20, T.region, T.region === 'LCK' ? { young: true } : null); if (T.region === 'LCK') addAcad(w, np, T); else addRoster(w, np, T); return np;
 }
 function autoLineup(w, T) { return POS.map(pos => bestAt(w, T, pos) || bestAcadAt(w, T, pos) || emergency(w, T, pos)); }
 function teamStr(w, T) { return avg(autoLineup(w, T).map(ovrRaw)); }
@@ -220,22 +296,26 @@ function addNews(w, text) { w.news.unshift({ y: w.year, text }); if (w.news.leng
 
 /* ---------- 월드 생성 ---------- */
 function newWorld() {
-  const w = { v: 4, year: START_YEAR, teams: {}, P: {}, fa: [], ids: {}, news: [], hist: [], nextPid: 1, usedH: {}, user: null, phase: 'PRE', rec: {}, yearLog: {}, S: null, meta: rollMeta(null), nextMeta: null };
+  const w = { v: 5, year: START_YEAR, teams: {}, P: {}, fa: [], ids: {}, news: [], hist: [], nextPid: 1, usedH: {}, user: null, phase: 'PRE', rec: {}, yearLog: {}, S: null, meta: rollMeta(null), nextMeta: null, breaking: null };
+  // 실존 선수 이름을 먼저 모두 예약해 둔다 (빈자리를 채울 때 풀에서 같은 선수가 두 번 나오지 않게)
+  for (const rg in TEAMS_DATA) for (const d of TEAMS_DATA[rg]) for (const r of d[4]) if (r[0]) w.usedH[r[0]] = 1;
+  for (const id in ACADEMY_DATA) for (const [, nick] of ACADEMY_DATA[id]) w.usedH[nick] = 1;
   for (const rg in TEAMS_DATA) {
     w.ids[rg] = [];
     for (const [id, name, en, color, roster] of TEAMS_DATA[rg]) {
       const base = avg(roster.map(r => r[1]));
       const T = { id, name, en, color, region: rg, base, base0: base, style: pick(['AGG', 'TF', 'MAC']), roster: [], acad: [], lineup: {}, tw: clamp(60 + (base - 76) * 1.4, 55, 85), titles: {} };
       w.teams[id] = T; w.ids[rg].push(id);
-      roster.forEach((r, i) => { const p = genPlayer(w, POS[i], r[1], r[2], rg, r[0] || null); addRoster(w, p, T); p.con = rg === 'LCK' || rg === 'LPL' ? randi(1, 3) : 9; });
-      if (rg === 'LPL') { const s = genPlayer(w, pick(POS), base - 9 + randn() * 2, randi(18, 22), rg); addRoster(w, s, T); }
+      // 공개 자료로 확인하지 못한 자리(null)도 실존 선수 풀에서 채운다
+      roster.forEach((r, i) => { const p = r[0] ? genPlayer(w, POS[i], r[1], r[2], rg, r[0]) : newcomer(w, POS[i], r[1], r[2], r[2], rg); addRoster(w, p, T); p.con = rg === 'LCK' || rg === 'LPL' ? randi(1, 3) : 9; });
       if (rg === 'LCK') {
         for (const [pos, nick] of ACADEMY_DATA[id] || []) { const p = genPlayer(w, pos, randi(64, 73), randi(18, 21), rg, nick); p.pot = Math.round(clamp(ovrRaw(p) + randi(12, 22), 0, 92)); addAcad(w, p, T); }
-        for (const pos of POS) if (!acadP(w, T).some(p => p.pos === pos)) addAcad(w, genPlayer(w, pos, randi(56, 64), randi(17, 19), rg), T);
+        for (const pos of POS) if (!acadP(w, T).some(p => p.pos === pos)) addAcad(w, newcomer(w, pos, randi(60, 66), 17, 19, rg, { young: true }), T);
       }
     }
   }
-  for (let i = 0; i < 14; i++) { const p = genPlayer(w, POS[i % 5], randi(64, 77), randi(19, 27), i % 3 ? 'LCK' : 'LPL'); p.con = 0; w.fa.push(p.id); }
+  // 시작부터 무소속인 실존 선수 (FA 시장)
+  for (const k of ['KR', 'CN']) for (;;) { const p = poolPick(w, null, [k], { fa: true, target: 78 }); if (!p) break; p.con = 0; w.fa.push(p.id); }
   initFinance(w);
   for (const T of Object.values(w.teams)) for (const p of rosterP(w, T)) p.sal = salaryFor(p);
   for (const p of Object.values(w.P)) if (!p.acad && p.age >= 19) p.debut = START_YEAR - randi(1, Math.max(1, p.age - 18));
@@ -311,35 +391,120 @@ function newStand(ids) { const st = {}; ids.forEach(id => { st[id] = { w: 0, l: 
 function addRes(st, r) { if (!st[r.a] || !st[r.b]) return; st[r.winner].w++; st[r.loser].l++; st[r.a].gw += r.sa; st[r.a].gl += r.sb; st[r.b].gw += r.sb; st[r.b].gl += r.sa; }
 
 function ev(w, m, text, tone, cast) { const e = { m, text, tone: tone || '' }; if (cast != null) e.cast = cast; w.S.ev.push(e); }
-/* 결승 중계: 내 팀이 오른 결승은 세트별 사건 타임라인을 만들어 두고, 시즌 재생 중에 문자 중계로 보여 준다 */
+/* 결승 중계: 내 팀이 오른 결승은 세트별 사건 타임라인을 만들어 두고, 시즌 재생 중에 미니맵 중계로 보여 준다 */
 const FIN_NAME = { LCKCUP: 'LCK컵 결승', LPL_S1: 'LPL 스플릿 1 결승', LPL_S2: 'LPL 스플릿 2 결승', MSI: 'MSI 결승', LCK_PO: 'LCK 결승', LPL_PO: 'LPL 결승', WKO: '롤드컵 결승' };
 const FIN_MONTH = { LCKCUP: '2월', LPL_S1: '2월', LPL_S2: '6월', MSI: '7월', LCK_PO: '9월', LPL_PO: '9월', WKO: '11월' };
 const DRAKES = ['바람', '화염', '대지', '바다', '마법공학', '화학공학'];
-function castEvents(w, r, g) {
-  const nm = id => (w.P[id] ? w.P[id].nick : '?'), win = g.aWin ? 0 : 1, side = [tName(w, r.a), tName(w, r.b)];
+const LANE_KO = { top: '탑', mid: '미드', bot: '바텀' };
+const LOC_KO = { top: '탑', mid: '미드', bot: '바텀', jg0: '블루 정글', jg1: '레드 정글', baron: '바론 둥지', drake: '용 둥지' };
+const TOWER_KO = ['1차 포탑', '2차 포탑', '억제기 포탑', '억제기'];
+const FEATS = ['폭딜', '완벽한 이니시에이팅', '다중 킬', '슈퍼 세이브', '절묘한 점멸 각', '플래시 궁', '침착한 카이팅'];
+// 결승 세트의 밴픽: 내 챔피언은 그 세트에 실제로 꺼낸 챔피언, 나머지는 메타 위주. 한 세트 안에서 겹치지 않는다
+function draftPicks(w, r, g) {
+  const used = new Set(), out = [[], []];
+  if (g.uch) used.add(g.uch);
+  [r.la, r.lb].forEach((ids, sd) => ids.forEach((id, i) => {
+    const p = w.P[id], pos = POS[i];
+    let c = p && p.isUser && g.uch ? g.uch : null;
+    if (!c) { const list = CHAMPS[pos].filter(x => !used.has(x[0])), meta = list.filter(x => x[1] === w.meta); c = (meta.length && chance(0.5) ? pick(meta) : pick(list))[0]; }
+    used.add(c); out[sd].push(c);
+  }));
+  return out;
+}
+/* 결승 세트 타임라인 (미니맵 중계용)
+ *  m 경기 시간(분) · s 사건을 만든 진영(0 블루 = r.a, 1 레드 = r.b, -1 중립) · k 종류 · t 해설(빈 문자열이면 지도에만 표시)
+ *  loc 위치(top·mid·bot·jg0·jg1·baron·drake·base0·base1) · kills [블루, 레드] · dead 쓰러진 선수 [진영, 포지션 번호]
+ *  act 그 자리로 움직이는 선수 · all 양 팀 전원이 모인다. 세트의 킬 수는 경기 결과(g.kills)와 정확히 맞춘다 */
+function castEvents(w, r, g, picks) {
+  const win = g.aWin ? 0 : 1, lu = [r.la, r.lb], tn = [tName(w, r.a), tName(w, r.b)];
+  const P = (sd, i) => w.P[lu[sd][i]];
+  const nm = (sd, i) => { const p = P(sd, i); return p ? p.nick : '?'; };
+  const who = (sd, i) => `${nm(sd, i)}(${picks[sd][i]})`;
+  const whoJ = (sd, i, a, b) => who(sd, i) + jo(picks[sd][i], a, b);
+  const bx = sd => g.box.filter(b => b.side === sd);
   const lean = p => (chance(win === 0 ? p : 1 - p) ? 0 : 1);
-  const best = sd => g.box.filter(b => b.side === sd).sort((x, y) => y.k - x.k || y.a - x.a)[0];
-  const out = [];
-  const fb = lean(0.6), fbp = pick(g.box.filter(b => b.side === fb && b.k > 0)) || best(fb);
-  out.push({ m: randi(2, 6), s: fb, t: `퍼스트 블러드 — ${nm(fbp.pid)}` });
-  out.push({ m: randi(6, 8), s: lean(0.55), t: '공허 유충 획득' });
-  out.push({ m: randi(14, 16), s: lean(0.6), t: '협곡의 전령으로 포탑 철거' });
+  const left = [g.kills[0], g.kills[1]];
+  const take = (sd, n) => { const k = Math.max(0, Math.min(n, left[sd])); left[sd] -= k; return k; };
+  const killer = sd => wIdx(bx(sd).map(b => b.k + 0.6));
+  const victims = (sd, n) => { const ws = bx(sd).map(b => b.d + 0.6), out = []; while (out.length < Math.min(n, 5)) { const i = wIdx(ws); if (!out.includes(i)) out.push(i); ws[i] = 0.0001; } return out; };
+  const KK = (sd, a, b) => (sd === 0 ? [a, b || 0] : [b || 0, a]);
+  const deadOf = (sd, a, b) => victims(1 - sd, a).map(x => [1 - sd, x]).concat(victims(sd, b || 0).map(x => [sd, x]));
+  const locOf = (i, sd) => (i === 0 ? 'top' : i === 2 ? 'mid' : i === 1 ? 'jg' + sd : 'bot');
+  const opp = i => (i === 3 || i === 4 ? pick([3, 4]) : i === 1 ? pick([0, 2, 3]) : i);
+  const out = [], lost = [{ top: 0, mid: 0, bot: 0 }, { top: 0, mid: 0, bot: 0 }];
+  const add = (m, e) => { e.m = r1(clamp(m, 0, g.dur)); e.kills = e.kills || [0, 0]; out.push(e); return e; };
+  const objAct = sd => [[sd, 1], [sd, 2], [sd, 3], [sd, 4]];
+  const tower = (m, sd, lane) => {
+    const d = 1 - sd; if (lost[d][lane] >= 4 || m >= g.dur - 0.2) return;
+    const tier = lost[d][lane]++;
+    add(m, { s: sd, k: 'tower', lane, tier, loc: lane, t: tier ? `${tn[sd]}, ${LANE_KO[lane]} ${TOWER_KO[tier]}까지 밀어낸다` : `${tn[sd]} ${LANE_KO[lane]} ${TOWER_KO[tier]} 파괴`, act: lane === 'top' ? [[sd, 0], [sd, 1]] : lane === 'mid' ? [[sd, 2], [sd, 1]] : [[sd, 3], [sd, 4]] });
+  };
+
+  add(0, { s: -1, k: 'note', t: `경기 시작! 블루 진영 ${tn[0]}, 레드 진영 ${tn[1]}` });
+  // 라인전: 내가 있는 라인, 아니면 스타가 있는 라인을 먼저 비춘다
+  const meI = [0, 1].map(sd => lu[sd].findIndex(id => w.P[id] && w.P[id].isUser));
+  let fi = meI[0] >= 0 ? meI[0] : meI[1] >= 0 ? meI[1] : -1;
+  if (fi < 0) { let bf = 0; for (const sd of [0, 1]) for (let i = 0; i < 5; i++) { const p = P(sd, i), f = (p && FAME[p.nick]) || 0; if (f > bf) { bf = f; fi = i; } } if (fi < 0) fi = 2; }
+  add(rand(1.2, 2), { s: -1, k: 'note', t: fi === 0 ? `탑 ${who(0, 0)} vs ${who(1, 0)}, 초반 라인 주도권 싸움` : fi === 1 ? `정글 ${nm(0, 1)}${jo(nm(0, 1), '과', '와')} ${nm(1, 1)}, 첫 동선 싸움이 시작된다` : fi === 2 ? `미드 ${who(0, 2)} vs ${who(1, 2)}, 팽팽한 라인전` : `바텀 ${nm(0, 3)}·${nm(0, 4)} vs ${nm(1, 3)}·${nm(1, 4)}, 2:2 딜교환` });
+  // 퍼스트 블러드
+  const fb = lean(0.6), fk = killer(fb), fv = opp(fk), fm = rand(2.5, 5.5);
+  const fact = [[fb, fk], [1 - fb, fv]]; if (fk === 1) fact.push([fb, fv]);
+  add(fm, { s: fb, k: 'kill', loc: locOf(fv, 1 - fb), kills: KK(fb, take(fb, 1)), dead: [[1 - fb, fv]], act: fact, t: `퍼스트 블러드! ${whoJ(fb, fk, '이', '가')} ${nm(1 - fb, fv)}${jo(nm(1 - fb, fv), '을', '를')} 잡아낸다${fk === 1 ? ' · 갱킹 성공' : ''}` });
+  // 오브젝트
+  { const s = lean(0.55); add(rand(5.5, 7.5), { s, k: 'obj', loc: 'baron', act: [[s, 0], [s, 1], [s, 2]], t: `${tn[s]} 공허 유충 사냥` }); }
   const dc = [0, 0];
-  for (let m = randi(5, 8); m < g.dur - 2 && dc[0] < 4 && dc[1] < 4; m += randi(5, 7)) { const sd = lean(0.62); dc[sd]++; out.push({ m, s: sd, t: `${pick(DRAKES)}의 드래곤 (${side[sd]} ${dc[sd]}스택)${dc[sd] === 4 ? ' · 드래곤의 영혼!' : ''}` }); }
-  for (let i = 0, n = g.dur > 30 ? 3 : 2; i < n; i++) { const sd = lean(0.62), bp = best(sd); out.push({ m: randi(12, Math.max(13, g.dur - 3)), s: sd, t: `한타 ${randi(3, 5)}:${randi(0, 2)} 대승 — ${nm(bp.pid)} ${pick(['폭딜', '이니시에이팅', '다중 킬', '슈퍼 세이브'])}` }); }
-  if (g.dur >= 24) out.push({ m: randi(21, Math.min(g.dur - 2, 30)), s: lean(0.8), t: '내셔 남작 처치' });
-  if (g.dur >= 34) out.push({ m: g.dur - randi(2, 4), s: win, t: '장로 드래곤 처치' });
-  const me = g.box.find(b => w.P[b.pid] && w.P[b.pid].isUser);
-  if (me && me.k >= 4) out.push({ m: randi(14, Math.max(15, g.dur - 2)), s: me.side, t: `${nm(me.pid)} ${me.k >= 7 ? '쿼드라킬!' : '트리플킬!'} 경기장이 들썩인다` });
-  out.push({ m: g.dur, s: win, t: `${side[win]} 넥서스 파괴` });
+  for (let m = rand(5, 8); m < g.dur - 2 && dc[0] < 4 && dc[1] < 4; m += rand(5, 6.5)) {
+    const sd = lean(0.62); dc[sd]++;
+    const e = { s: sd, k: 'obj', loc: 'drake', act: objAct(sd), t: `${pick(DRAKES)}의 드래곤 (${tn[sd]} ${dc[sd]}스택)${dc[sd] === 4 ? ' · 드래곤의 영혼!' : ''}` };
+    if (m > 10 && chance(0.4)) { const a = take(sd, randi(1, 2)), b = take(1 - sd, randi(0, 1)); if (a + b) { e.all = true; e.kills = KK(sd, a, b); e.dead = deadOf(sd, a, b); e.t += ` · 용 앞 교전 ${a}:${b}`; } }
+    add(m, e);
+  }
+  tower(rand(11, 13.5), lean(0.6), pick(['top', 'bot']));
+  { const s = lean(0.6), m = rand(14, 16); add(m, { s, k: 'obj', loc: 'baron', act: [[s, 0], [s, 1], [s, 2]], t: `${tn[s]} 협곡의 전령 획득` }); tower(m + 1.2, s, 'mid'); }
+  add(rand(18.5, 20.5), { s: -1, k: 'note', t: pick(['사이드 운영 단계. 양 팀이 시야를 넓혀 간다', `${who(0, 0)}, ${who(1, 0)} 모두 사이드 라인을 밀고 있다`, '중반 운영 싸움. 다음 오브젝트를 두고 신경전']) });
+  if (g.dur > 28) add(rand(24.5, 26.5), { s: -1, k: 'note', t: '바론 둥지 앞 대치. 한 번의 실수가 승부를 가른다' });
+  // 한타
+  for (let i = 0, n = g.dur > 30 ? 3 : 2; i < n; i++) {
+    const m = 13 + (g.dur - 16) * (i + rand(0.2, 0.8)) / n, sd = lean(0.64);
+    const a = take(sd, randi(2, 4)); if (!a) continue;
+    const b = take(1 - sd, randi(0, 1)), c = killer(sd), loc = pick(['mid', 'drake', 'baron', 'jg0', 'jg1']);
+    add(m, { s: sd, k: 'tf', loc, all: true, kills: KK(sd, a, b), dead: deadOf(sd, a, b), t: `${LOC_KO[loc]} 한타 ${a}:${b} ${a - b >= 3 ? '대승' : '승리'} — ${who(sd, c)} ${pick(FEATS)}` });
+    tower(m + rand(1, 1.8), sd, loc === 'baron' ? 'top' : loc === 'drake' ? 'bot' : pick(['top', 'mid', 'bot']));
+  }
+  if (g.dur >= 24) { const m = rand(21, Math.min(g.dur - 2, 30)), sd = lean(0.8); add(m, { s: sd, k: 'obj', loc: 'baron', act: [[sd, 0]].concat(objAct(sd)), t: `${tn[sd]} 내셔 남작 처치! 바론 버프` }); tower(m + 1.6, sd, 'mid'); tower(m + 2.6, sd, pick(['top', 'bot'])); }
+  if (g.dur >= 34) add(g.dur - rand(2, 4), { s: win, k: 'obj', loc: 'drake', act: objAct(win), t: `${tn[win]} 장로 드래곤 처치` });
+  // 스타 선수의 솔로킬 (Faker·Chovy 같은 이름값)
+  let stars = 0;
+  for (const sd of [0, 1]) for (let i = 0; i < 5; i++) {
+    const p = P(sd, i);
+    if (!p || p.isUser || stars >= 2 || !(p.real && FAME[p.nick]) || !chance(0.5) || left[sd] < 1) continue;
+    const v = i === 1 ? pick([0, 2]) : opp(i); stars++;
+    add(rand(7, g.dur - 4), { s: sd, k: 'kill', loc: locOf(v, 1 - sd), kills: KK(sd, take(sd, 1)), dead: [[1 - sd, v]], act: [[sd, i], [1 - sd, v]], t: `${whoJ(sd, i, '이', '가')} ${nm(1 - sd, v)} 솔로킬! ${pick(['역시 이름값을 한다', '클래스는 영원하다', '관중석이 들썩인다'])}` });
+  }
+  // 내 활약
+  for (const sd of [0, 1]) {
+    const mi = meI[sd]; if (mi < 0) continue;
+    const b = bx(sd)[mi];
+    if (b.k >= 4 && left[sd] >= 3) { const n = b.k >= 7 && left[sd] >= 4 ? 4 : 3, loc = pick(['mid', 'drake', 'baron']); add(rand(14, g.dur - 2), { s: sd, k: 'tf', loc, all: true, kills: KK(sd, take(sd, n)), dead: deadOf(sd, n), t: `${nm(sd, mi)} ${n === 4 ? '쿼드라킬!' : '트리플킬!'} ${picks[sd][mi]}${roJ(picks[sd][mi])} 경기장을 뒤집는다` }); }
+    else if (b.k >= 1 && left[sd] >= 1) { const v = opp(mi); add(rand(8, g.dur - 3), { s: sd, k: 'kill', loc: locOf(v, 1 - sd), kills: KK(sd, take(sd, 1)), dead: [[1 - sd, v]], act: [[sd, mi], [1 - sd, v]], t: `${whoJ(sd, mi, '이', '가')} ${nm(1 - sd, v)}${jo(nm(1 - sd, v), '을', '를')} 끊어낸다` }); }
+  }
+  // 남은 킬은 작은 교전으로 (대부분 지도에만 표시)
+  for (const sd of [0, 1]) while (left[sd] > 0) {
+    const n = Math.min(left[sd], chance(0.72) ? 1 : 2); left[sd] -= n;
+    const k = killer(sd), vs = victims(1 - sd, n), loc = n === 1 ? locOf(vs[0], 1 - sd) : pick(['mid', 'jg0', 'jg1', 'top', 'bot']);
+    add(rand(Math.max(3, fm + 0.5), g.dur - 1), { s: sd, k: 'kill', loc, kills: KK(sd, n), dead: vs.map(x => [1 - sd, x]), act: [[sd, k]].concat(vs.map(x => [1 - sd, x])), t: chance(0.3) ? `${LOC_KO[loc]}에서 ${whoJ(sd, k, '이', '가')} ${n > 1 ? '더블킬' : '킬을 올린다'}` : '' });
+  }
+  // 마무리: 억제기를 깨고 넥서스로
+  { const lane = pick(['top', 'mid', 'bot']); tower(g.dur - 1.8, win, lane); tower(g.dur - 1.1, win, lane); }
+  add(g.dur, { s: win, k: 'nexus', loc: 'base' + (1 - win), all: true, t: `${tn[win]} 넥서스 파괴! 세트를 가져간다` });
   return out.sort((a, b) => a.m - b.m);
 }
 function castFinal(w, key, r) {
   const t = userTeamId(w); if (!t || (r.a !== t && r.b !== t) || !FIN_NAME[key]) return;
   const S = w.S; S.casts = S.casts || [];
-  const lu = ids => ids.map(id => { const p = w.P[id]; return p ? { nick: p.nick, pos: p.pos, ovr: ovr(p), star: !!(p.real && FAME[p.nick]), me: !!p.isUser, seed: p.seed } : null; });
+  const lu = ids => ids.map(id => { const p = w.P[id]; return p ? { nick: p.nick, pos: p.pos, ovr: ovr(p), star: !!(p.real && FAME[p.nick]), face: isFranchise(p), me: !!p.isUser, seed: p.seed } : null; });
   const idx = S.casts.length;
-  S.casts.push({ key, name: FIN_NAME[key], a: r.a, b: r.b, la: lu(r.la), lb: lu(r.lb), sa: r.sa, sb: r.sb, winner: r.winner, pog: w.P[r.pog] ? w.P[r.pog].nick : '', games: r.games.map(g => ({ dur: g.dur, kills: g.kills, aWin: g.aWin, ev: castEvents(w, r, g) })) });
+  S.casts.push({ key, name: FIN_NAME[key], a: r.a, b: r.b, la: lu(r.la), lb: lu(r.lb), sa: r.sa, sb: r.sb, winner: r.winner, pog: w.P[r.pog] ? w.P[r.pog].nick : '', games: r.games.map(g => { const pk = draftPicks(w, r, g); return { dur: g.dur, kills: g.kills, aWin: g.aWin, picks: pk, ev: castEvents(w, r, g, pk) }; }) });
   ev(w, FIN_MONTH[key], `${FIN_NAME[key]} — ${tName(w, r.a)} vs ${tName(w, r.b)}`, 'cast', idx);
 }
 function myComp(w, key) { const S = w.S; let c = S.comps.find(x => x.key === key); if (!c) { c = { key, name: COMP_NAME[key], result: '', my: blank(), tid: userP(w).tid }; S.comps.push(c); } return c; }
@@ -419,6 +584,7 @@ function series(w, a, b, bo, key) {
     const rts = [];
     for (const g of r.games) for (const bx of g.box) if (bx.pid === u.id) {
       const won = (bx.side === 0) === g.aWin, ch = pickChamp(w);
+      g.uch = ch; // 결승 중계에서 이 세트에 꺼낸 챔피언으로 보여 준다
       addStat(c.my, bx, won); addStat(w.S.tot, bx, won); addChamp(w, key, ch, won); rts.push(bx.rtg);
       if (bx.rtg >= 9.3 && chance(0.6)) ev(w, COMP_MONTH[key], `${COMP_NAME[key]} · ${ch}${roJ(ch)} 인생 경기! ${bx.k}/${bx.d}/${bx.a}, 평점 ${bx.rtg}`, 'gold');
     }
@@ -777,6 +943,8 @@ function finishSeason(w) {
     S.duoTop = { id: p.id, nick: p.nick, seed: p.seed, g: S.duo[dk], chem: U.chem[dk], ovr: ovr(p) };
     ev(w, '11월', `${DUO_KO[u.pos]} ${p.nick}${jo(p.nick, '과', '와')} ${S.duo[dk]}세트 호흡 · 함께한 지 ${U.chem[dk]}시즌`, U.chem[dk] >= 2 ? 'good' : '');
   }
+  // 팀의 얼굴: 프랜차이즈 스타가 없는 팀에서 가장 이름값 있는 선수가 되면
+  { const T = u.tid && !u.acad && !u.mil ? w.teams[u.tid] : null; if (T && teamFace(w, T) === u && U.faceOf !== T.id) { U.faceOf = T.id; ev(w, '12월', `${T.name}의 얼굴이 됐다. 구단 시즌권 포스터 한가운데에 내 사진이 걸렸다`, 'gold'); } }
   S.ev.sort((a, b) => parseInt(a.m, 10) - parseInt(b.m, 10));
   if (!S.amateur) U.lp = Math.max(0, Math.round(U.lp + ((u.mil ? 300 : lpTarget(u)) - U.lp) * 0.5 + rand(-40, 40)));
   S.champTop = Object.keys(S.champs).map(n => ({ n, g: S.champs[n].g, w: S.champs[n].w })).sort((a, b) => b.g - a.g).slice(0, 3);
@@ -800,18 +968,22 @@ function finishSeason(w) {
   seasonFinance(w);
   offseasonWorld(w);
   aiFill(w);
+  makeBreaking(w);
   makeTasks(w);
 }
 
 /* ---------- 오프시즌 (NPC) ---------- */
 function develop(p) {
-  const a = p.age;
+  const a = p.age, fr = !!FRANCHISE[p.nick], famous = p.real && (FAME[p.nick] || ovrRaw(p) >= 86);
   for (const k of STATS) {
     let d = a <= 19 ? rand(2, 6) : a <= 22 ? rand(1, 4.5) : a <= 24 ? rand(0, 2.5) : a <= 26 ? rand(-1, 1.5) : a <= 28 ? rand(-1.8, 0.8) : rand(-3.5, 0.5);
     if ((k === 'macro' || k === 'mental') && a >= 24) d += 0.8;
     if (k === 'mech' && a >= 26) d -= 0.8;
     if (d > 0) d *= clamp((p.pot - p.st[k]) / 12, 0, 1.3) * (p.region === 'LCK' || p.region === 'LPL' ? 1 : 0.7);
-    else if (p.real && (FAME[p.nick] || ovrRaw(p) >= 86)) d *= a >= 31 ? 0.6 : 0.35;
+    // 실존 선수는 기량을 더 오래 지킨다: 시간이 흘러도 아는 얼굴이 리그에 남도록
+    else if (fr) d *= a >= 33 ? 0.55 : 0.3;
+    else if (famous) d *= a >= 31 ? 0.6 : 0.35;
+    else if (p.real) d *= a >= 32 ? 0.7 : 0.45;
     p.st[k] = clamp(p.st[k] + d, 20, 99);
   }
 }
@@ -836,27 +1008,40 @@ function offseasonWorld(w) {
     const o = ovrRaw(p);
     let pr = p.age >= 34 ? 0.85 : p.age >= 32 ? 0.5 : p.age >= 30 ? 0.22 : p.age >= 29 ? 0.08 : 0;
     if (o >= 85) pr *= 0.35; // 기량이 남아 있는 스타는 쉽게 은퇴하지 않는다
-    if (p.real) pr *= p.age < 33 ? 0.15 : 0.5;
-    if (FAME[p.nick] && p.age < 35) pr *= 0.3;
-    if (o < 62 && p.age >= 23) pr += 0.35;
-    if (!p.tid && p.age >= 25) pr += 0.3;
-    if (chance(pr)) { if (p.real || o >= 82) { addNews(w, `${p.nick}${p.tid ? ` (${tName(w, p.tid)})` : ''} 은퇴`); if (p.tid && !p.acad) postOf(w, p, 'retire', p.tid); } detach(w, p); w.fa = w.fa.filter(id => id !== p.id); delete w.P[p.id]; }
+    if (FRANCHISE[p.nick]) pr *= p.age < 34 ? 0.15 : 0.45; // 팀의 얼굴은 30대 중반까지 뛴다
+    else if (FAME[p.nick] && p.age < 35) pr *= 0.25;
+    else if (p.real) pr *= p.age < 33 ? 0.12 : 0.4;
+    if (p.age >= 37) pr = 1; // 서른일곱이면 누구든 마우스를 내려놓는다
+    if (o < 62 && p.age >= 23) pr += p.real ? 0.15 : 0.35;
+    if (!p.tid && p.age >= 25) pr += p.real ? 0.12 : 0.3;
+    if (chance(pr)) {
+      if (p.real || o >= 82) {
+        addNews(w, `${p.nick}${p.tid ? ` (${tName(w, p.tid)})` : ''} 은퇴`);
+        if (p.tid && !p.acad) postOf(w, p, 'retire', p.tid);
+        if (!p.acad) bigNews(w, 'retire', p, p.tid || p.lastTid || null, null, { years: p.debut ? w.year - p.debut + 1 : 0 });
+      }
+      detach(w, p); w.fa = w.fa.filter(id => id !== p.id); delete w.P[p.id];
+    }
   }
   contractDecisions(w);
+  // 해외 리그 빈자리: 그 리그의 실존 선수부터
   for (const rg of ['LEC', 'LCS', 'LCP', 'CBLOL']) for (const id of w.ids[rg]) {
     const T = w.teams[id];
     for (const p of rosterP(w, T)) p.con = 9;
-    for (const pos of POS) if (!rosterP(w, T).some(p => p.pos === pos)) { const p = genPlayer(w, pos, T.base0 - 1 + randn() * 2, randi(19, 23), rg); addRoster(w, p, T); p.con = 9; }
+    for (const pos of POS) if (!rosterP(w, T).some(p => p.pos === pos)) { const p = newcomer(w, pos, T.base0 - 1 + randn() * 2, 19, 23, rg); addRoster(w, p, T); p.con = 9; }
   }
-  // 유망주 공급 (LCK CL·LDL 출신): 리그 수준이 세대교체 뒤에도 유지되도록
-  // 리그 전체 전력이 목표보다 낮아지면 그만큼 유망주를 더 공급한다
+  // 유망주·베테랑 공급 (LCK CL·LDL·해외 리그 출신): 리그 수준이 세대교체 뒤에도 유지되도록.
+  // 실존 선수 풀에서 먼저 데려오고, 리그 전체 전력이 목표보다 낮아지면 그만큼 더 공급한다
   const lack = rg => Math.max(0, Math.round((REGION_TARGET[rg] - avg(w.ids[rg].map(id => teamStr(w, w.teams[id])))) * 2.5));
-  for (const rg of ['LCK', 'LPL']) for (let i = 0, n = (rg === 'LCK' ? 3 : 5) + Math.min(6, lack(rg)); i < n; i++) {
-    const p = genPlayer(w, POS[randi(0, 4)], REGION_TARGET[rg] - randi(8, 14), randi(18, 21), rg);
-    p.pot = Math.round(clamp(ovrRaw(p) + randi(8, 18), 0, 92)); p.con = 0; w.fa.push(p.id);
+  for (const rg of ['LCK', 'LPL']) for (let i = 0, n = (rg === 'LCK' ? 1 : 2) + Math.min(6, lack(rg)); i < n; i++) {
+    const tg = REGION_TARGET[rg] - randi(6, 12);
+    let p = poolPick(w, null, [rg === 'LCK' ? 'KR' : 'CN'], { target: tg, region: rg });
+    if (!p) { p = genPlayer(w, POS[randi(0, 4)], tg - 2, randi(18, 21), rg); p.pot = Math.round(clamp(ovrRaw(p) + randi(5, 13), 0, 90)); }
+    p.con = 0; w.fa.push(p.id);
   }
-  for (const id of w.ids.LCK) { const T = w.teams[id]; for (const pos of POS) if (!acadP(w, T).some(p => p.pos === pos && !p.isUser)) { const p = genPlayer(w, pos, randi(54, 66), randi(17, 18), 'LCK'); p.pot = Math.round(clamp(ovrRaw(p) + randi(14, 30), 0, 92)); addAcad(w, p, T); } }
-  if (w.fa.length > 70) { const s = w.fa.map(id => w.P[id]).filter(Boolean).sort((a, b) => ovrRaw(b) - ovrRaw(a)); for (const p of s.slice(70)) { w.fa = w.fa.filter(id => id !== p.id); delete w.P[p.id]; } }
+  for (const id of w.ids.LCK) { const T = w.teams[id]; for (const pos of POS) if (!acadP(w, T).some(p => p.pos === pos && !p.isUser) && !w.fa.some(i => w.P[i] && w.P[i].acadOf === T.id && w.P[i].pos === pos)) { const p = newcomer(w, pos, randi(56, 64), 17, 18, 'LCK', { young: true }); if (!p.real) p.pot = Math.round(clamp(ovrRaw(p) + randi(10, 24), 0, 90)); addAcad(w, p, T); } }
+  // FA 명단이 넘치면 가상 선수부터 정리한다 (실존 선수는 시장에 더 오래 남는다)
+  if (w.fa.length > 70) { const s = w.fa.map(id => w.P[id]).filter(Boolean).sort((a, b) => (b.real - a.real) || (ovrRaw(b) - ovrRaw(a))); for (const p of s.slice(70)) { w.fa = w.fa.filter(id => id !== p.id); delete w.P[p.id]; } }
   for (const id of w.fa) { const p = w.P[id]; if (p) p.sal = salaryFor(p); }
 }
 /* =========================================================
@@ -899,38 +1084,51 @@ function stoveMove(w, p, from, to, kind) {
   if (to && L.teams[to]) L.teams[to].in.push(p.nick);
   if (p.real || ovrRaw(p) >= 80) L.moves.push({ nick: p.nick, from, to, kind, ovr: ovr(p) });
 }
-// 계약 만료 선수: 구단은 실력·연봉·운영 방향으로 재계약을 정하고, 스타는 약팀이면 떠나기도 한다
+/* 속보 후보: 이름값(FAME·인기)·실력·팀의 얼굴 여부·리그 이동으로 화제성을 매긴다 */
+function bigNews(w, kind, p, from, to, extra) {
+  const L = w.stoveLog; if (!L || !p || p.isUser) return;
+  const fr = isFranchise(p, from) || isFranchise(p, to);
+  if (!(p.real && (FAME[p.nick] || fr || ovrRaw(p) >= 83 || p.pop >= 60)) && ovrRaw(p) < 86) return;
+  const cross = !!(from && to && w.teams[from] && w.teams[to] && w.teams[from].region !== w.teams[to].region);
+  const score = (FAME[p.nick] || p.pop || 0) * 0.6 + ovrRaw(p) * 0.4 + (fr ? (kind === 'extend' ? 6 : 45) : 0) + ({ retire: 14, move: 10, leave: 6, extend: (extra && extra.back) ? 4 : -12 }[kind] || 0) + (cross ? 10 : 0);
+  (L.big = L.big || []).push(Object.assign({ k: kind, nick: p.nick, name: p.name || '', seed: p.seed, pos: p.pos, ovr: ovr(p), age: p.age, from: from || null, to: to || null, fr, cross, score: r1(score) }, extra || {}));
+}
+// 계약 만료 선수: 구단은 실력·연봉·운영 방향으로 재계약을 정하고, 스타는 약팀이면 떠나기도 한다. 팀의 얼굴은 웬만하면 붙잡는다
 function contractDecisions(w) {
   for (const rg of ['LCK', 'LPL']) for (const id of w.ids[rg]) {
     const T = w.teams[id], lvl = teamStr(w, T), rank = (w.stoveLog && w.stoveLog.teams[id] || {}).rank || 5;
     for (const p of rosterP(w, T)) {
       if (p.isUser || p.con > 0) continue;
-      const o = ovrRaw(p), ask = salaryFor(p), room = T.money - payroll(w, T) + p.sal;
+      const o = ovrRaw(p), ask = salaryFor(p), room = T.money - payroll(w, T) + p.sal, fr = isFranchise(p, T.id);
       let keep = o >= lvl - 5;
       if (T.mode === 'rebuild' && p.age >= 26 && ask > T.money * 0.18) keep = chance(0.35);
       if (T.mode === 'win' && o >= lvl - 2) keep = true;
       if (ask > room) keep = keep && chance(0.4);
-      // 스타 선수는 하위권 팀과 재계약하지 않고 시장에 나오기도 한다
       const star = o >= 86 || FAME[p.nick];
-      if (keep && star && rank > w.ids[rg].length * 0.6 && chance(0.55)) keep = false;
-      if (keep && star && chance(0.32)) keep = false; // 시장 평가를 받아 보려는 스타
-      if (LOYAL[p.nick] === T.id) keep = true; // 원클럽맨
-      if (!keep && p.real && o >= lvl - 8 && chance(0.4)) keep = true;
-      if (keep && chance(0.9)) { p.con = randi(1, 3); p.sal = ask; if (FAME[p.nick] || o >= 86) postOf(w, p, 'extend', T.id, { years: p.con, until: w.year + p.con }); }
-      else { if (NOTABLE(p)) postOf(w, p, 'thanks', T.id); stoveMove(w, p, T.id, null, 'out'); toFA(w, p); }
+      if (fr) keep = ONECLUB[p.nick] ? (o >= lvl - 14 || chance(0.6)) : chance(o >= lvl - 10 ? 0.93 : 0.5);
+      else {
+        // 스타 선수는 하위권 팀과 재계약하지 않고 시장에 나오기도 한다
+        if (keep && star && rank > w.ids[rg].length * 0.6 && chance(0.55)) keep = false;
+        if (keep && star && chance(0.32)) keep = false; // 시장 평가를 받아 보려는 스타
+        if (!keep && p.real && o >= lvl - 8 && chance(0.4)) keep = true;
+      }
+      if (keep && (fr || chance(0.9))) {
+        p.con = randi(1, 3); p.sal = ask;
+        if (FAME[p.nick] || o >= 86 || fr) { postOf(w, p, 'extend', T.id, { years: p.con, until: w.year + p.con }); bigNews(w, 'extend', p, T.id, T.id, { years: p.con, until: w.year + p.con }); }
+      } else { if (NOTABLE(p)) postOf(w, p, 'thanks', T.id); bigNews(w, 'leave', p, T.id, null); stoveMove(w, p, T.id, null, 'out'); toFA(w, p); }
     }
     let up = 0;
     for (const p of acadP(w, T).sort((a, b) => ovrRaw(b) - ovrRaw(a))) {
       if (p.isUser) continue;
-      if (p.age >= 22 && ovrRaw(p) < 66) { toFA(w, p); continue; }
-      const b = bestAt(w, T, p.pos);
-      // 빈자리는 이적 시장에서 먼저 채운다. 2군은 지금 주전보다 확실히 나을 때만 올린다 (팀당 한 명)
-      if (b && up < 1 && ovrRaw(p) + (p.real ? 2 : 0) > ovrRaw(b) + (b.real ? 2 : 0) + (T.mode === 'rebuild' ? 1 : 3)) { addRoster(w, p, T); p.con = 2; p.sal = salaryFor(p); stoveMove(w, p, null, T.id, 'callup'); up++; }
+      if (p.age >= (p.real ? 24 : 22) && ovrRaw(p) < 66) { toFA(w, p); continue; }
+      const b = bestAt(w, T, p.pos), po = ovrRaw(p) + (p.real ? 2 : 0), bo = b ? ovrRaw(b) + (b.real ? 2 : 0) : 0;
+      // 주전보다 낫거나, 나이 든 주전과 비슷해지면 1군으로 올린다 (팀당 두 명까지)
+      if (b && up < 2 && (po > bo + (T.mode === 'rebuild' ? 0 : 2) || (b.age >= 29 && po >= bo - 1))) { addRoster(w, p, T); p.con = 2; p.sal = salaryFor(p); stoveMove(w, p, null, T.id, 'callup'); up++; continue; }
+      // 1군 자리가 막힌 실력 있는 2군 선수는 시장에 나가 다른 팀 1군에 도전한다 (안 팔리면 2군으로 돌아온다)
+      if (p.age >= 20 && ovrRaw(p) >= REGION_TARGET.LCK - 7 && chance(0.7)) { toFA(w, p); p.acadOf = T.id; p.lastTid = null; }
     }
   }
 }
-// 사실상 팀을 떠나지 않는 원클럽 레전드
-const LOYAL = { Faker: 'T1' };
 // FA 시장: 좋은 선수부터 팀을 고른다
 function runMarket(w, light) {
   for (const rg of ['LCK', 'LPL']) {
@@ -942,35 +1140,46 @@ function runMarket(w, light) {
       let best = null, bestU = -1e9;
       for (const id of ids) {
         const T = w.teams[id], cur = bestAt(w, T, p.pos), co = cur ? ovrRaw(cur) + (cur.real ? 2 : 0) : 0;
-        const weak = !cur || co < REGION_TARGET[rg] - 9;
+        const weak = !cur || co < REGION_TARGET[rg] - 9, home = FRANCHISE[p.nick] === T.id;
         if (light && !weak) continue;
-        if (cur && o < co + (T.mode === 'win' ? 1 : 2) && !weak) continue; // 지금 주전보다 확실히 나아야 데려간다
-        if (pass === 2 && cur && o < co + 3 && !weak) continue; // 몸값을 낮춘 2차 시장도 확실한 보강만
+        if (cur && o < co + (T.mode === 'win' ? 1 : 2) && !weak && !home) continue; // 지금 주전보다 확실히 나아야 데려간다
+        if (pass === 2 && cur && o < co + 3 && !weak && !home) continue; // 몸값을 낮춘 2차 시장도 확실한 보강만
         if (rg === 'LPL' && p.nat === 'KR' && rosterP(w, T).filter(x => x.nat !== 'CN').length >= 2) continue;
         const room = T.money - payroll(w, T);
         const offer = ask * (T.mode === 'win' ? 1.15 : T.mode === 'rebuild' ? 0.9 : 1) * (0.9 + T.money / T.wealth * 0.15) * (rg === 'LPL' && p.nat === 'KR' ? 1.35 : 1);
-        if (offer > room + (weak ? ask * 0.6 : 0) + (o >= 86 && T.mode === 'win' ? ask * 0.7 : 0)) continue; // 우승권 팀은 스타에겐 사치세를 감수한다
-        if (T.mode === 'rebuild' && p.age >= 28 && !weak && chance(0.6)) continue;
-        // 선수의 선택: 연봉 + 우승 가능성(팀 전력) + 주전 보장
-        const U = offer / ask * 3 + (teamStr(w, T) - 78) * (o >= 85 ? 0.62 : 0.2) + (o > co ? 1.5 : 0) + (p.lastTid === T.id ? 1.2 : 0) + rand(-1.2, 1.2);
+        if (offer > room + (weak ? ask * 0.6 : 0) + (o >= 86 && T.mode === 'win' ? ask * 0.7 : 0) + (home ? ask : 0)) continue; // 우승권 팀은 스타에겐 사치세를 감수한다
+        if (T.mode === 'rebuild' && p.age >= 28 && !weak && !home && chance(0.6)) continue;
+        // 선수의 선택: 연봉 + 우승 가능성(팀 전력) + 주전 보장 + 친정팀
+        const U = offer / ask * 3 + (teamStr(w, T) - 78) * (o >= 85 ? 0.62 : 0.2) + (o > co ? 1.5 : 0) + (p.lastTid === T.id ? 1.2 : 0) + (home ? 5 : 0) + rand(-1.2, 1.2);
         if (U > bestU) { bestU = U; best = { T, offer }; }
       }
       if (!best) continue;
-      const { T, offer } = best, from = p.region, back = p.lastTid === T.id;
+      const { T, offer } = best, from = p.region, back = p.lastTid === T.id, prevTid = p.lastTid || null;
       addRoster(w, p, T); p.region = rg; p.con = randi(1, 3); p.sal = r1(offer);
       stoveMove(w, p, null, T.id, 'in');
-      if (back) { w.posts = (w.posts || []).filter(x => !(x.y === w.year && x.type === 'thanks' && x.nick === p.nick && x.tid === T.id)); if (p.real || o >= 80) addNews(w, `[재계약] ${p.nick} · ${T.name} ${p.con}년 · 연봉 ${p.sal}억`); if (NOTABLE(p)) postOf(w, p, 'extend', T.id, { years: p.con, until: w.year + p.con }); continue; }
-      if (p.real || o >= 80) addNews(w, `[이적] ${p.nick} → ${T.name}${from !== rg ? (rg === 'LCK' && p.nat === 'KR' ? ' (LCK 복귀)' : ' (해외 이적)') : ''} · 연봉 ${p.sal}억`);
+      if (back) {
+        w.posts = (w.posts || []).filter(x => !(x.y === w.year && x.type === 'thanks' && x.nick === p.nick && x.tid === T.id));
+        if (p.real || o >= 80) addNews(w, `[재계약] ${p.nick} · ${T.name} ${p.con}년 · 연봉 ${p.sal}억`);
+        if (NOTABLE(p)) postOf(w, p, 'extend', T.id, { years: p.con, until: w.year + p.con });
+        bigNews(w, 'extend', p, T.id, T.id, { years: p.con, until: w.year + p.con, back: true });
+        continue;
+      }
+      const abroad = p.from && p.from !== 'KR' && p.from !== 'CN' && rg === 'LCK';
+      if (p.real || o >= 80) addNews(w, `[이적] ${p.nick} → ${T.name}${from !== rg ? (rg === 'LCK' && p.nat === 'KR' ? ' (LCK 복귀)' : ' (해외 이적)') : abroad ? ` (${p.from}에서 복귀)` : ''} · 연봉 ${p.sal}억`);
       if (NOTABLE(p)) postOf(w, p, 'welcome', T.id, { until: w.year + p.con });
+      bigNews(w, 'move', p, prevTid, T.id, { years: p.con, sal: p.sal, fromReg: abroad ? p.from : from, toReg: rg });
+      p.from = null; p.acadOf = null;
     }
-    // 빈자리는 2군 콜업이나 신인으로, 넘치는 인원은 정리
+    // 시장에서 팀을 못 찾은 2군 졸업생은 원래 2군으로 돌아간다
+    if (rg === 'LCK') for (const p of w.fa.map(i => w.P[i]).filter(p => p && p.acadOf && !p.tid)) { const T = w.teams[p.acadOf]; p.acadOf = null; if (T && acadP(w, T).length < 8) addAcad(w, p, T); }
+    // 빈자리는 2군 콜업이나 새 얼굴(실존 선수 풀 먼저)로, 넘치는 인원은 정리
     for (const id of ids) {
       const T = w.teams[id];
-      for (const pos of POS) if (!bestAt(w, T, pos)) { const a = bestAcadAt(w, T, pos); if (a) { addRoster(w, a, T); stoveMove(w, a, null, T.id, 'callup'); } else { const np = genPlayer(w, pos, REGION_TARGET[rg] - randi(4, 9), randi(19, 21), rg); addRoster(w, np, T); np.con = randi(1, 2); } }
+      for (const pos of POS) if (!bestAt(w, T, pos)) { const a = bestAcadAt(w, T, pos); if (a) { addRoster(w, a, T); stoveMove(w, a, null, T.id, 'callup'); } else { const np = newcomer(w, pos, REGION_TARGET[rg] - randi(4, 9), 19, 21, rg); addRoster(w, np, T); np.con = randi(1, 2); } }
       let ro = rosterP(w, T);
       while (ro.length > 7) {
         const st = new Set(autoLineup(w, T).map(p => p.id));
-        const cut = ro.filter(p => !st.has(p.id) && !p.isUser).sort((a, b) => ovrRaw(a) - ovrRaw(b))[0];
+        const cut = ro.filter(p => !st.has(p.id) && !p.isUser && !isFranchise(p, T.id)).sort((a, b) => ovrRaw(a) - ovrRaw(b))[0];
         if (!cut) break; toFA(w, cut); ro = rosterP(w, T);
       }
       T.base = avg(autoLineup(w, T).map(ovrRaw));
@@ -980,6 +1189,46 @@ function runMarket(w, light) {
 }
 function aiFill(w, light) { runMarket(w, light); }
 
+/* =========================================================
+ * 스토브리그 속보: 큰 이적·재계약·은퇴를 속보 카드로 (게임 속 가상 매체 '협곡 인사이더')
+ * ========================================================= */
+function makeBreaking(w) {
+  const L = w.stoveLog, by = {};
+  // 같은 선수의 소식은 마지막 결과 하나로 (결별 → 이적이면 이적, 결별 → 복귀면 재계약)
+  for (const b of (L && L.big) || []) { const pv = by[b.nick]; by[b.nick] = pv ? Object.assign({}, b, { from: b.from || pv.from, fr: b.fr || pv.fr, score: Math.max(b.score, pv.score) }) : b; }
+  // 재계약 소식은 두 건까지만: 이적·결별·은퇴가 먼저 보이도록
+  let ext = 0;
+  const items = Object.values(by).sort((a, b) => b.score - a.score).filter(b => b.k !== 'extend' || b.back || ext++ < 2).slice(0, 6).map(b => breakingItem(w, b));
+  w.breaking = { y: w.year, items, shown: 0 };
+}
+function breakingItem(w, b) {
+  const F = b.from && w.teams[b.from] ? w.teams[b.from].name : '', To = b.to && w.teams[b.to] ? w.teams[b.to].name : '';
+  const n = b.nick, nn = b.name ? `${n}(${b.name})` : n, J = (x, a, c) => x + jo(x, a, c), R = x => x + roJ(x);
+  let tag = 'BREAKING', text;
+  if (b.k === 'retire') { tag = 'OFFICIAL'; text = b.fr ? `${J(n, '이', '가')} 은퇴를 선언했다. ${F ? F + '의 상징이 ' : ''}협곡을 떠난다. 한 시대가 저문다` : `${nn}, 현역 은퇴. ${F ? F + '에서 ' : ''}${b.years > 1 ? b.years + '번째 시즌을 끝으로 ' : ''}커리어를 마무리한다`; }
+  else if (b.k === 'extend') {
+    if (b.back) text = `반전. FA 시장에 나왔던 ${J(n, '이', '가')} ${R(To)} 돌아간다. ${b.years}년 계약`;
+    else if (b.fr) { tag = 'EXCLUSIVE'; text = `${To}, ${J(n, '과', '와')} ${b.years}년 재계약 합의. ${b.until}년까지 ${To}의 얼굴로 남는다`; }
+    else { tag = 'EXCLUSIVE'; text = `${To}, ${J(nn, '과', '와')} 재계약 합의. 계약은 ${b.until}년까지`; }
+  } else if (b.k === 'move') {
+    if (b.fr && F) text = `충격. ${J(n, '이', '가')} ${J(F, '을', '를')} 떠나 ${R(To)} 간다. 소식통에 따르면 ${b.years}년 계약`;
+    else if (b.toReg === 'LPL' && b.fromReg !== 'LPL') text = `소식통: ${J(nn, '이', '가')} ${R(To)} 향한다. LPL 진출 · 연봉 ${b.sal}억 규모`;
+    else if (b.toReg === 'LCK' && b.fromReg && b.fromReg !== 'LCK') text = `${J(n, '이', '가')} LCK로 돌아온다. ${J(To, '과', '와')} ${b.years}년 계약 합의`;
+    else text = `소식통에 따르면 ${J(nn, '이', '가')} ${J(To, '과', '와')} ${b.years}년 계약에 합의했다${F ? `. ${J(F, '을', '를')} 떠나 새 도전` : ''}`;
+  } else text = b.fr ? `${F}, 팀의 얼굴 ${J(n, '과', '와')} 결별. ${J(n, '은', '는')} FA 시장으로` : `${F}, ${J(n, '과', '와')} 결별. ${J(n, '이', '가')} FA 시장에 나온다`;
+  return { tag, text, k: b.k, nick: n, seed: b.seed, pos: b.pos, ovr: b.ovr, from: b.from, to: b.to, fr: !!b.fr, likes: Math.round(b.score * b.score * 1.4 + rand(0, 800)), rts: Math.round(b.score * b.score * 0.35 + rand(0, 200)), ago: `${randi(1, 11)}시간` };
+}
+// 내가 주인공인 루머: 제안이 온 구단 중 가장 강한 팀이 적극적이라는 소식 (이름값이 있을 때만)
+function userRumor(w) {
+  const u = userP(w), U = w.user, t = U.tasks;
+  if (!t || !t.offers || U.stage !== 'PRO' || !w.breaking) return;
+  const clubs = t.offers.filter(o => (o.kind === 'transfer' || o.kind === 'resign') && o.tid && o.tid !== u.tid).sort((a, b) => w.teams[b.tid].base - w.teams[a.tid].base);
+  if (!clubs.length || (u.pop < 25 && ovrRaw(u) < 76)) return;
+  const To = w.teams[clubs[0].tid].name;
+  const text = clubs.length > 1 ? `여러 구단이 ${u.nick}에게 관심을 보이고 있다. ${J2(To, '이', '가')} 가장 적극적이라는 소식` : `${To}, ${u.nick} 영입 추진 중. 소식통에 따르면 조건은 이미 전달됐다`;
+  w.breaking.items.unshift({ tag: 'RUMOR', text, k: 'rumor', nick: u.nick, seed: u.seed, pos: u.pos, ovr: ovr(u), from: u.tid || null, to: clubs[0].tid, me: true, likes: Math.round(200 + u.pop * u.pop * 2), rts: Math.round(40 + u.pop * u.pop * 0.5), ago: '방금' });
+}
+function J2(x, a, b) { return x + jo(x, a, b); }
 /* =========================================================
  * 내 선수
  * ========================================================= */
@@ -1008,7 +1257,7 @@ function createUser(w, o) {
   p.st = Object.assign({}, o.style.st);
   p.pot = Math.round(clamp(80 + randn() * 4, 72, 94)); p.pop = 1; p.con = 0; p.sal = 0; p.tid = null;
   w.user = {
-    pid: p.id, style: o.style.name, focus: o.focus.slice(0, 2), money: 0, trust: 45, lp: 280 + randi(0, 60), stage: 'AMATEUR', hist: [], reactions: [], items: [],
+    pid: p.id, style: o.style.name, focus: o.focus.slice(0, 2), money: 0, trust: 45, lp: 280 + randi(0, 60), stage: 'AMATEUR', hist: [], reactions: [],
     everPro: false, firstPog: false, lastStart: false, exempt: false, served: false, boost: 1, ptSafe: false, tasks: null, loan: null, retired: false, scout: scoutGrade(p.pot),
     champ: o.champ || CHAMPS[o.pos][0][0], champs: {}, skins: [], skinPending: null, sig: null, chem: {}, sigTmp: 0,
   };
@@ -1070,7 +1319,8 @@ function makeOffers(w) {
     const weak = w.ids.LCK.filter(id => id !== u.tid).map(id => ({ id, so: (bestAt(w, w.teams[id], u.pos) ? ovrRaw(bestAt(w, w.teams[id], u.pos)) : 0) })).filter(x => o >= x.so - 4).sort((a, b) => w.teams[a.id].base - w.teams[b.id].base);
     if (weak[0]) out.push({ kind: 'loan', tid: weak[0].id, role: 'STARTER', sal: u.sal, years: 1, title: `${tName(w, weak[0].id)} 임대 (1시즌)`, desc: '출전 기회 확보 · 시즌 후 원소속팀 복귀' });
   }
-  if (!out.some(x => x.kind !== 'stay' && x.kind !== 'return') && !out.length) {
+  // 불러주는 팀이 없을 때: 어린 선수는 약팀 입단 테스트로 기회를 얻고, 25살부터는 은퇴로 이어진다
+  if (!out.length && u.age < 25) {
     const low = [...w.ids.LCK].sort((a, b) => w.teams[a].base - w.teams[b].base)[0];
     out.push({ kind: 'transfer', tid: low, role: 'BENCH', sal: 0.5, years: 1, title: `${tName(w, low)} 입단 테스트 합격`, desc: '1군 · 주전 경쟁 · 연봉 0.5억' });
   }
@@ -1153,43 +1403,36 @@ function resolveTurn(w, id, i) {
   return msg;
 }
 
-/* 상점: 시즌마다 하나 */
-const SHOP = [
-  { id: 'mouse', name: '프로용 게이밍 마우스', desc: '피지컬 +2', st: ['mech'], cost: 0.05, f: u => { u.st.mech += 2; } },
-  { id: 'monitor', name: '480Hz 모니터', desc: '라인전 +2', st: ['lane'], cost: 0.1, f: u => { u.st.lane += 2; } },
-  { id: 'coach', name: '1:1 코칭 패키지', desc: '운영 +3', st: ['macro'], cost: 0.3, f: u => { u.st.macro += 3; } },
-  { id: 'mind', name: '스포츠 심리 상담', desc: '멘탈 +3', st: ['mental'], cost: 0.2, f: u => { u.st.mental += 3; } },
-  { id: 'pt', name: '재활·체력 PT', desc: '다음 시즌 부상 확률 절반', st: [], cost: 0.25, f: (u, w) => { w.user.ptSafe = true; } },
-  { id: 'camp', name: '개인 해외 부트캠프', desc: '한타 +2 · 챔프폭 +2', st: ['tf', 'pool'], cost: 0.8, f: u => { u.st.tf += 2; u.st.pool += 2; } },
-  { id: 'chair', name: '인체공학 게이밍 의자', desc: '다음 시즌 성장 +12%', st: [], cost: 0.4, f: (u, w) => { w.user.boost = 1.12; } },
-  { id: 'vod', name: '경기 분석 툴 구독', desc: '운영 +1 · 한타 +1', st: ['macro', 'tf'], cost: 0.08, f: u => { u.st.macro += 1; u.st.tf += 1; } },
-];
-function buyItem(w, id) {
-  const it = SHOP.find(x => x.id === id), u = userP(w), U = w.user;
-  if (!it || !U.shop || U.money < it.cost || U.shop.bought) return false;
-  U.money = r1(U.money - it.cost); it.f(u, w); U.shop.bought = it.id; U.items.push({ y: w.year, name: it.name });
-  for (const k of STATS) u.st[k] = clamp(u.st[k], 1, 99);
-  return true;
+/* 은퇴: 31살 시즌이 마지막. 아마추어로 21살이 되도록 프로가 못 되면 꿈을 접는다 */
+function retireReason(w) {
+  const u = userP(w), U = w.user;
+  if ((U.stage === 'AMATEUR' || U.stage === 'TRAINEE') && u.age >= 21) return 'dream';
+  if (u.age > MAX_AGE) return 'age';
+  return null;
 }
-
 function makeTasks(w) {
   const u = userP(w), U = w.user;
-  const t = { offers: null, path: null, turn: null, turnDone: false, turnResult: null, turnAck: false, resultsSeen: false, military: false };
-  // 상점은 오프시즌부터 다음 시즌 시작 전까지 열려 있다 (시즌마다 새 상품 3개, 하나만 구매)
-  U.shop = { stock: shuffle(SHOP.map(x => x.id)).slice(0, 3), bought: null };
-  if (u.mil) {
+  const t = { offers: null, path: null, turn: null, turnDone: false, turnResult: null, turnAck: false, resultsSeen: false, military: false, retire: retireReason(w), lastDance: false };
+  if (t.retire) { /* 커리어를 마무리한다 */ }
+  else if (u.mil) {
     if (U.milLeft > 1) { U.milLeft--; t.path = { kind: 'mil', title: '군 복무 계속' }; }
     else { u.mil = false; U.served = true; U.milLeft = 0; t.offers = makeOffers(w); addNews(w, `${u.nick} 전역`); pushReaction(w, 'discharge'); }
-  } else if (U.stage !== 'AMATEUR' && u.age >= 28 && !U.exempt && !U.served) {
+  } else if (U.stage === 'PRO' && u.age >= 28 && !U.exempt && !U.served) {
     t.military = true;
   } else {
     t.offers = makeOffers(w);
     // 계약이 끝나면 FA 공시: 선수 개인 계정에 FREE AGENT 포스터를 올린다
-    if (u.tid && u.con <= 0 && !U.loan && U.stage !== 'AMATEUR') postOf(w, u, 'fa', null);
+    if (t.offers.length && u.tid && u.con <= 0 && !U.loan && U.stage !== 'AMATEUR') postOf(w, u, 'fa', null);
   }
-  if (!u.mil) t.turn = rollTurn(w);
+  // 계약이 끝났는데 불러주는 팀이 하나도 없으면 은퇴
+  if (t.offers && !t.offers.length) { t.retire = 'noOffer'; t.offers = null; }
+  // 26살부터는 스스로 은퇴를 선언할 수 있다
+  if (t.offers && U.stage === 'PRO' && u.age >= 26) t.offers.push({ kind: 'retire', tid: null, role: null, sal: 0, years: 0, title: '은퇴를 선언한다', desc: '여기서 커리어를 마무리하고 명예의 전당에 올라요' });
+  t.lastDance = !t.retire && u.age === MAX_AGE;
+  if (!u.mil && !t.retire) t.turn = rollTurn(w);
   U.tasks = t;
   U.lplCall = false;
+  userRumor(w);
 }
 function enlist(w) {
   const u = userP(w), U = w.user;
@@ -1198,7 +1441,7 @@ function enlist(w) {
   U.tasks.military = false; U.tasks.path = { kind: 'mil', title: '입대' };
   addNews(w, `${u.nick} 입대`); pushReaction(w, 'enlist');
 }
-function canStartSeason(w) { const t = w.user.tasks; return !!(t && t.path && !t.military); }
+function canStartSeason(w) { const t = w.user.tasks; return !!(t && t.path && !t.military && !t.retire); }
 function startNextSeason(w) {
   const u = userP(w), t = w.user.tasks;
   if (t.path && t.path.kind !== 'mil' && t.path.kind !== 'stay' && !t.path.done) applyOffer(w, t.path);
@@ -1307,8 +1550,10 @@ function pushReaction(w, kind, teamName) {
   const u = userP(w), U = w.user;
   // 이적 반응은 함께 뛸 동료 이름으로: 스토브리그 팬들은 팀보다 라인업을 본다
   const T = u.tid ? w.teams[u.tid] : null, mate = T ? bestAt(w, T, DUO[u.pos], u.id) : null;
-  const stars = T ? rosterP(w, T).filter(p => !p.isUser).sort((a, b) => ovrRaw(b) - ovrRaw(a)).slice(0, 2).map(p => p.nick) : [];
-  const mateTxt = mate ? `${mate.nick}-${u.nick} ${DUO_KO[u.pos]}라니, 벌써 기대된다` : `${teamName} 영입 잘했다. ${u.nick} 기대된다`;
+  // 팀의 얼굴(Faker·ShowMaker 같은 프랜차이즈 스타)이 있으면 그 이름이 먼저 나온다
+  const face = T ? teamFace(w, T) : null, fr = face && !face.isUser && isFranchise(face, T.id) ? face : null;
+  const stars = T ? [fr].concat(rosterP(w, T).filter(p => !p.isUser && p !== fr).sort((a, b) => ovrRaw(b) - ovrRaw(a))).filter(Boolean).slice(0, 2).map(p => p.nick) : [];
+  const mateTxt = fr && chance(0.6) ? `${fr.nick}${jo(fr.nick, '과', '와')} 같은 팀이라니. ${u.nick} 인생 바뀌었다` : mate ? `${mate.nick}-${u.nick} ${DUO_KO[u.pos]}라니, 벌써 기대된다` : `${teamName} 영입 잘했다. ${u.nick} 기대된다`;
   const texts = {
     transfer: [stars.length === 2 ? `[오피셜] ${u.nick}, ${teamName} 입단… ${stars[0]}·${stars[1]}${jo(stars[1], '과', '와')} 한솥밥` : `[오피셜] ${u.nick}, ${teamName} 입단`, mateTxt],
     loan: [`[오피셜] ${u.nick}, ${teamName}로 1시즌 임대`, `임대 가서 경기 많이 뛰고 와라`],
